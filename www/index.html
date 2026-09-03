@@ -629,15 +629,23 @@
             </div>
           </div>
 
-          <!-- Collapsible PIN Configuration (New PIN & Confirm PIN) -->
+          <!-- Collapsible PIN Configuration (New PIN, Confirm PIN, or Current PIN to disable) -->
           <div class="pin-set-container hidden" id="pinSetContainer">
             <div class="pin-setup-box">
-              <div class="pin-setup-inputs">
+              <!-- Mode: New PIN & Confirm PIN -->
+              <div class="pin-setup-inputs" id="pinNewInputsRow">
                 <input type="password" id="newPinInput" maxlength="4" placeholder="New PIN" inputmode="numeric" />
                 <input type="password" id="confirmPinInput" maxlength="4" placeholder="Confirm PIN" inputmode="numeric" />
               </div>
+
+              <!-- Mode: Current PIN verification to Turn Off -->
+              <div class="pin-disable-inputs hidden" id="pinDisableInputsRow">
+                <input type="password" id="currentPinInput" maxlength="4" placeholder="Enter Current PIN to Turn Off" inputmode="numeric" />
+              </div>
+
               <div class="pin-setup-actions">
                 <button class="btn-pin-action" id="savePinBtn" type="button">Save PIN</button>
+                <button class="btn-pin-danger hidden" id="confirmTurnOffBtn" type="button">Verify & Turn Off</button>
                 <button class="btn-pin-cancel hidden" id="cancelPinBtn" type="button">Cancel</button>
               </div>
               <div class="pin-setup-msg hidden" id="pinSetupMsg"></div>
