@@ -3,7 +3,7 @@
   "appName": "Shobhit Admin Hub",
   "webDir": "www",
   "server": {
-    "androidScheme": "https",
+    "url": "https://shobhit-admin-hub.vercel.app",
     "cleartext": true,
     "allowNavigation": [
       "*"
