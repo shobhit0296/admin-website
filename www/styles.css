@@ -1488,47 +1488,130 @@ input:focus, select:focus {
   line-height: 1.3;
 }
 
-/* Inline PIN Setting */
-.pin-input-inline {
+.setting-action-group {
   display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-clean-text {
+  background: #151515;
+  border: 1px solid #282828;
+  color: #ededed;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-clean-text:hover {
+  background: #202020;
+  border-color: #383838;
+  color: #ffffff;
+}
+
+.btn-clean-text:active {
+  transform: scale(0.95);
+  background: #111111;
+}
+
+/* Collapsible Dual PIN Setup Container */
+.pin-setup-box {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  padding: 8px 0;
+  padding: 10px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.pin-input-inline input {
-  flex: 1;
+.pin-setup-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.pin-setup-inputs input {
+  width: 100%;
   background: #050505;
   border: 1px solid #222222;
   color: #ffffff;
-  padding: 8px 12px;
+  padding: 9px 12px;
   border-radius: 8px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-family: var(--font-mono);
   letter-spacing: 2px;
+  text-align: center;
   outline: none;
+  transition: border-color 0.15s ease;
 }
 
-.pin-input-inline input:focus {
+.pin-setup-inputs input:focus {
   border-color: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+}
+
+.pin-setup-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .btn-pin-action {
+  flex: 1;
   background: #181818;
   border: 1px solid #282828;
   color: #ffffff;
   font-size: 11px;
   font-weight: 700;
-  padding: 0 14px;
+  padding: 8px 14px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s;
-  white-space: nowrap;
+  text-align: center;
 }
 
 .btn-pin-action:active {
   background: #242424;
-  transform: scale(0.96);
+  transform: scale(0.97);
+}
+
+.btn-pin-cancel {
+  background: transparent;
+  border: 1px solid #222222;
+  color: #888888;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-pin-cancel:hover {
+  color: #ededed;
+  border-color: #333333;
+}
+
+.pin-setup-msg {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 6px;
+  border-radius: 6px;
+  line-height: 1.3;
+}
+
+.pin-setup-msg.error {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.pin-setup-msg.success {
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.2);
 }
 
 /* Compact Clean Select */

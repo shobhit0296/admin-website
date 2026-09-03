@@ -1692,8 +1692,12 @@
     autoRefreshText: document.getElementById('autoRefreshText'),
     refreshSpinnerDot: document.getElementById('refreshSpinnerDot'),
     pinSetContainer: document.getElementById('pinSetContainer'),
+    changePinBtn: document.getElementById('changePinBtn'),
     newPinInput: document.getElementById('newPinInput'),
+    confirmPinInput: document.getElementById('confirmPinInput'),
     savePinBtn: document.getElementById('savePinBtn'),
+    cancelPinBtn: document.getElementById('cancelPinBtn'),
+    pinSetupMsg: document.getElementById('pinSetupMsg'),
     exportDataBtn: document.getElementById('exportDataBtn'),
     importDataBtn: document.getElementById('importDataBtn'),
     importFileInput: document.getElementById('importFileInput'),
@@ -2616,7 +2620,8 @@
   // --- Settings & PIN ---
   function setupSettings() {
     elements.homeSettingsBtn.addEventListener('click', () => {
-      elements.pinToggle.checked = state.pinEnabled;
+      const hasValidPin = /^\d{4}$/.test(state.appPin);
+      elements.pinToggle.checked = state.pinEnabled && hasValidPin;
       if (elements.biometricToggle) {
         elements.biometricToggle.checked = state.biometricEnabled !== false;
       }
@@ -2629,12 +2634,20 @@
       if (elements.autoRefreshIntervalSelect) {
         elements.autoRefreshIntervalSelect.value = String(state.autoRefreshInterval || 5000);
       }
-      if (state.pinEnabled) {
-        elements.pinSetContainer.classList.remove('hidden');
-        elements.newPinInput.value = state.appPin;
-      } else {
-        elements.pinSetContainer.classList.add('hidden');
+
+      // Hide setup container on open
+      if (elements.pinSetContainer) elements.pinSetContainer.classList.add('hidden');
+      if (elements.pinSetupMsg) elements.pinSetupMsg.classList.add('hidden');
+
+      // Show Change PIN button if PIN is currently enabled and valid
+      if (elements.changePinBtn) {
+        if (state.pinEnabled && hasValidPin) {
+          elements.changePinBtn.classList.remove('hidden');
+        } else {
+          elements.changePinBtn.classList.add('hidden');
+        }
       }
+
       elements.settingsModal.classList.remove('hidden');
     });
 
@@ -2682,17 +2695,110 @@
       });
     }
 
+    // Toggle Require PIN Lock
     elements.pinToggle.addEventListener('change', () => {
-      state.pinEnabled = elements.pinToggle.checked;
-      localStorage.setItem('omni_pin_enabled', state.pinEnabled);
-      if (state.pinEnabled) {
-        elements.pinSetContainer.classList.remove('hidden');
+      const isChecked = elements.pinToggle.checked;
+      const hasValidPin = /^\d{4}$/.test(state.appPin);
+
+      if (isChecked) {
+        if (hasValidPin) {
+          state.pinEnabled = true;
+          localStorage.setItem('omni_pin_enabled', 'true');
+          if (elements.changePinBtn) elements.changePinBtn.classList.remove('hidden');
+          if (elements.pinSetContainer) elements.pinSetContainer.classList.add('hidden');
+          showToast('Security PIN lock enabled');
+        } else {
+          // No PIN set yet -> keep toggle off until verified and expand setup space
+          elements.pinToggle.checked = false;
+          if (elements.pinSetContainer) {
+            elements.pinSetContainer.classList.remove('hidden');
+            if (elements.cancelPinBtn) elements.cancelPinBtn.classList.add('hidden');
+            if (elements.savePinBtn) elements.savePinBtn.textContent = 'Save & Enable';
+            if (elements.newPinInput) elements.newPinInput.value = '';
+            if (elements.confirmPinInput) elements.confirmPinInput.value = '';
+            if (elements.pinSetupMsg) elements.pinSetupMsg.classList.add('hidden');
+            elements.newPinInput.focus();
+          }
+          if (elements.changePinBtn) elements.changePinBtn.classList.add('hidden');
+        }
       } else {
-        elements.pinSetContainer.classList.add('hidden');
-        state.appPin = '';
-        localStorage.removeItem('omni_app_pin');
-        showToast('Security lock disabled');
+        state.pinEnabled = false;
+        localStorage.setItem('omni_pin_enabled', 'false');
+        if (elements.changePinBtn) elements.changePinBtn.classList.add('hidden');
+        if (elements.pinSetContainer) elements.pinSetContainer.classList.add('hidden');
+        showToast('Security PIN lock disabled');
       }
+    });
+
+    // Change PIN Button Clicked
+    if (elements.changePinBtn) {
+      elements.changePinBtn.addEventListener('click', () => {
+        if (elements.pinSetContainer) {
+          elements.pinSetContainer.classList.remove('hidden');
+          if (elements.cancelPinBtn) elements.cancelPinBtn.classList.remove('hidden');
+          if (elements.savePinBtn) elements.savePinBtn.textContent = 'Update PIN';
+          if (elements.newPinInput) elements.newPinInput.value = '';
+          if (elements.confirmPinInput) elements.confirmPinInput.value = '';
+          if (elements.pinSetupMsg) elements.pinSetupMsg.classList.add('hidden');
+          elements.newPinInput.focus();
+        }
+      });
+    }
+
+    // Cancel PIN Setup
+    if (elements.cancelPinBtn) {
+      elements.cancelPinBtn.addEventListener('click', () => {
+        if (elements.pinSetContainer) elements.pinSetContainer.classList.add('hidden');
+        if (elements.pinSetupMsg) elements.pinSetupMsg.classList.add('hidden');
+      });
+    }
+
+    // Save & Verify PIN
+    elements.savePinBtn.addEventListener('click', () => {
+      const newPin = (elements.newPinInput ? elements.newPinInput.value : '').trim();
+      const confirmPin = (elements.confirmPinInput ? elements.confirmPinInput.value : '').trim();
+
+      const showPinMsg = (msg, isErr = true) => {
+        if (elements.pinSetupMsg) {
+          elements.pinSetupMsg.textContent = msg;
+          elements.pinSetupMsg.className = `pin-setup-msg ${isErr ? 'error' : 'success'}`;
+          elements.pinSetupMsg.classList.remove('hidden');
+        } else {
+          alert(msg);
+        }
+      };
+
+      if (!/^\d{4}$/.test(newPin)) {
+        showPinMsg('Please enter exactly 4 digits for New PIN.', true);
+        if (navigator.vibrate) navigator.vibrate(80);
+        if (elements.newPinInput) elements.newPinInput.focus();
+        return;
+      }
+
+      if (newPin !== confirmPin) {
+        showPinMsg('PINs do not match. Please verify both fields.', true);
+        if (navigator.vibrate) navigator.vibrate([80, 50, 80]);
+        if (elements.confirmPinInput) elements.confirmPinInput.focus();
+        return;
+      }
+
+      // Verified!
+      state.appPin = newPin;
+      state.pinEnabled = true;
+      localStorage.setItem('omni_app_pin', newPin);
+      localStorage.setItem('omni_pin_enabled', 'true');
+
+      // Update UI: Toggle ON, remove that space, show Change PIN button
+      elements.pinToggle.checked = true;
+      if (elements.pinSetContainer) elements.pinSetContainer.classList.add('hidden');
+      if (elements.changePinBtn) elements.changePinBtn.classList.remove('hidden');
+
+      if (elements.newPinInput) elements.newPinInput.value = '';
+      if (elements.confirmPinInput) elements.confirmPinInput.value = '';
+      if (elements.pinSetupMsg) elements.pinSetupMsg.classList.add('hidden');
+
+      if (navigator.vibrate) navigator.vibrate(50);
+      showToast('✓ Security PIN verified & activated');
     });
 
     if (elements.biometricToggle) {
@@ -2702,17 +2808,6 @@
         showToast(state.biometricEnabled ? 'Fingerprint unlock enabled' : 'Fingerprint unlock disabled');
       });
     }
-
-    elements.savePinBtn.addEventListener('click', () => {
-      const pin = elements.newPinInput.value.trim();
-      if (/^\d{4}$/.test(pin)) {
-        state.appPin = pin;
-        localStorage.setItem('omni_app_pin', pin);
-        showToast('4-Digit Security PIN Saved');
-      } else {
-        alert('Please enter exactly 4 digits for your PIN.');
-      }
-    });
 
     elements.exportDataBtn.addEventListener('click', () => {
       const backup = {
