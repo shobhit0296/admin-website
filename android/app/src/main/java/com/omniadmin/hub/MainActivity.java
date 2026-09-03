@@ -49,6 +49,49 @@ public class MainActivity extends BridgeActivity {
         // Add to main content view
         addContentView(floatingHubBtn, params);
         floatingHubBtn.setVisibility(View.GONE);
+
+        // Setup Bulletproof Fail-Safe: If remote server is unreachable, offline, or returns error, load local assets
+        setupFailSafeWebView();
+    }
+
+    private void setupFailSafeWebView() {
+        if (getBridge() == null || getBridge().getWebView() == null) return;
+        WebView webView = getBridge().getWebView();
+
+        webView.setWebViewClient(new com.getcapacitor.BridgeWebViewClient(getBridge()) {
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                if (failingUrl != null && !failingUrl.contains("localhost")) {
+                    view.post(() -> view.loadUrl("https://localhost/index.html"));
+                    return;
+                }
+                super.onReceivedError(view, errorCode, description, failingUrl);
+            }
+
+            @Override
+            public void onReceivedError(WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) {
+                if (request != null && request.isForMainFrame()) {
+                    String url = request.getUrl() != null ? request.getUrl().toString() : "";
+                    if (!url.contains("localhost")) {
+                        view.post(() -> view.loadUrl("https://localhost/index.html"));
+                        return;
+                    }
+                }
+                super.onReceivedError(view, request, error);
+            }
+
+            @Override
+            public void onReceivedHttpError(WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceResponse errorResponse) {
+                if (request != null && request.isForMainFrame() && errorResponse != null && errorResponse.getStatusCode() >= 400) {
+                    String url = request.getUrl() != null ? request.getUrl().toString() : "";
+                    if (!url.contains("localhost")) {
+                        view.post(() -> view.loadUrl("https://localhost/index.html"));
+                        return;
+                    }
+                }
+                super.onReceivedHttpError(view, request, errorResponse);
+            }
+        });
     }
 
     @Override
@@ -60,7 +103,7 @@ public class MainActivity extends BridgeActivity {
     public void checkHubButton() {
         if (floatingHubBtn != null && getBridge() != null && getBridge().getWebView() != null) {
             String url = getBridge().getWebView().getUrl();
-            if (url != null && !url.contains("localhost")) {
+            if (url != null && !url.contains("localhost") && !url.contains("vercel.app")) {
                 floatingHubBtn.setVisibility(View.VISIBLE);
             } else {
                 floatingHubBtn.setVisibility(View.GONE);
@@ -73,7 +116,7 @@ public class MainActivity extends BridgeActivity {
         WebView webView = (getBridge() != null) ? getBridge().getWebView() : null;
         if (webView != null) {
             String currentUrl = webView.getUrl();
-            if (currentUrl != null && !currentUrl.contains("localhost")) {
+            if (currentUrl != null && !currentUrl.contains("localhost") && !currentUrl.contains("vercel.app")) {
                 if (webView.canGoBack()) {
                     webView.goBack();
                 } else {
