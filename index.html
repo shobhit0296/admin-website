@@ -586,12 +586,23 @@
     </div>
   </div>
 
-  <!-- Settings & Backup Modal -->
+  <!-- Settings & Backup Modal (Clean Executive Matte) -->
   <div class="modal-backdrop hidden" id="settingsModal">
-    <div class="modal-sheet">
+    <div class="modal-sheet settings-sheet">
       <div class="modal-header">
-        <h3>Shobhit Admin Hub Settings</h3>
-        <button class="icon-btn-close" id="settingsCloseBtn">
+        <div class="sheet-title-group">
+          <div class="sheet-title-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3>Settings</h3>
+            <span class="sheet-subtitle">Security, data sync & backup</span>
+          </div>
+        </div>
+        <button class="icon-btn-close" id="settingsCloseBtn" aria-label="Close Settings">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -600,92 +611,101 @@
       </div>
 
       <div class="settings-content">
-        <div class="settings-section">
-          <h4>Security Lock</h4>
-          <div class="setting-row">
+        <!-- 1. Security Group -->
+        <div class="settings-card">
+          <div class="settings-card-label">SECURITY & ACCESS</div>
+          
+          <div class="setting-item">
             <div class="setting-info">
-              <span class="setting-title">Require 4-Digit PIN</span>
-              <span class="setting-subtitle">Locks the app upon opening to protect your live admin panels</span>
+              <span class="setting-title">Require PIN Lock</span>
+              <span class="setting-subtitle">Prompt for 4-digit PIN on app launch</span>
             </div>
             <label class="switch">
               <input type="checkbox" id="pinToggle" />
               <span class="slider round"></span>
             </label>
           </div>
-          <div class="setting-row">
+
+          <!-- Collapsible PIN Configuration -->
+          <div class="pin-set-container hidden" id="pinSetContainer">
+            <div class="pin-input-inline">
+              <input type="password" id="newPinInput" maxlength="4" placeholder="Enter 4 digits" />
+              <button class="btn-pin-action" id="savePinBtn">Set PIN</button>
+            </div>
+          </div>
+
+          <div class="setting-item">
             <div class="setting-info">
-              <span class="setting-title">Phone Fingerprint / Biometrics</span>
-              <span class="setting-subtitle">Use your default phone fingerprint sensor to unlock the APK</span>
+              <span class="setting-title">Biometric Sensor</span>
+              <span class="setting-subtitle">Fast unlock via fingerprint sensor</span>
             </div>
             <label class="switch">
               <input type="checkbox" id="biometricToggle" checked />
               <span class="slider round"></span>
             </label>
           </div>
-          <div class="pin-set-container hidden" id="pinSetContainer">
-            <input type="password" id="newPinInput" maxlength="4" placeholder="Enter 4-digit PIN" />
-            <button class="btn-sm-primary" id="savePinBtn">Set PIN</button>
-          </div>
         </div>
 
-        <div class="settings-section">
-          <h4>VPS Usage Notifications & Alerts</h4>
-          <p class="section-desc">Get phone push notifications whenever any website server crosses VPS usage thresholds (20%, 40%, 60%, 80%, 95%).</p>
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-title">VPS Usage Push Alerts</span>
-              <span class="setting-subtitle">Send phone notifications at 20%, 40%, 60%, 80%, 95%</span>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="vpsAlertsToggle" checked />
-              <span class="slider round"></span>
-            </label>
-          </div>
-          <div class="vps-thresholds-chips">
-            <span class="vps-chip">20% Usage</span>
-            <span class="vps-chip">40% Usage</span>
-            <span class="vps-chip warning">60% Usage</span>
-            <span class="vps-chip high">80% Usage</span>
-            <span class="vps-chip critical">95% Critical</span>
-          </div>
-          <button class="btn-outline btn-test-notif" id="testNotifBtn" type="button" style="margin-top: 10px; width: 100%;">
-            🔔 Send Test Notification Now
-          </button>
-        </div>
+        <!-- 2. Performance & Sync Group -->
+        <div class="settings-card">
+          <div class="settings-card-label">DATA & SYNC</div>
 
-        <div class="settings-section">
-          <h4>Live Auto-Refresh Engine</h4>
-          <p class="section-desc">Continuously auto-refreshes all website statuses, VPS load, active members, and database records in real time.</p>
-          <div class="setting-row">
+          <div class="setting-item">
             <div class="setting-info">
-              <span class="setting-title">Auto-Refresh Everytime</span>
-              <span class="setting-subtitle">Refreshes metrics continuously and whenever returning to app</span>
+              <span class="setting-title">Live Auto-Sync</span>
+              <span class="setting-subtitle">Continuously refresh live server metrics</span>
             </div>
             <label class="switch">
               <input type="checkbox" id="autoRefreshToggle" checked />
               <span class="slider round"></span>
             </label>
           </div>
-          <div class="setting-row" style="margin-top: 6px;">
+
+          <div class="setting-item">
             <div class="setting-info">
-              <span class="setting-title">Refresh Frequency</span>
-              <span class="setting-subtitle">How often data auto-updates in background</span>
+              <span class="setting-title">Sync Interval</span>
+              <span class="setting-subtitle">Background refresh frequency</span>
             </div>
-            <select id="autoRefreshIntervalSelect" class="settings-select">
-              <option value="3000">Every 3 seconds (Ultra Live)</option>
-              <option value="5000" selected>Every 5 seconds (Recommended)</option>
-              <option value="10000">Every 10 seconds</option>
-              <option value="30000">Every 30 seconds</option>
+            <select id="autoRefreshIntervalSelect" class="settings-select-clean">
+              <option value="3000">3s (Ultra Live)</option>
+              <option value="5000" selected>5s (Recommended)</option>
+              <option value="15000">15s (Normal)</option>
+              <option value="30000">30s (Eco)</option>
             </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-title">VPS Load Alerts</span>
+              <span class="setting-subtitle">Notify when server load crosses high usage</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="vpsAlertsToggle" checked />
+              <span class="slider round"></span>
+            </label>
           </div>
         </div>
 
-        <div class="settings-section">
-          <h4>Backup & Restore</h4>
-          <p class="section-desc">Export your websites with saved links and credentials to a JSON file.</p>
-          <div class="backup-actions">
-            <button class="btn-outline" id="exportDataBtn">Export Backup JSON</button>
-            <button class="btn-outline" id="importDataBtn">Import Backup</button>
+        <!-- 3. Backup & Storage Group -->
+        <div class="settings-card">
+          <div class="settings-card-label">BACKUP & MIGRATION</div>
+          <div class="backup-grid">
+            <button class="btn-clean-backup" id="exportDataBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Export JSON</span>
+            </button>
+            <button class="btn-clean-backup" id="importDataBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Import JSON</span>
+            </button>
             <input type="file" id="importFileInput" accept=".json" class="hidden" />
           </div>
         </div>
