@@ -2016,14 +2016,19 @@
         elements.browserLoader.classList.remove('hidden');
         elements.browserLoader.style.opacity = '1';
 
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        elements.liveAdminIframe.src = isLocal ? '/api/proxy?url=' + encodeURIComponent(site.url) : site.url;
+        const isNative = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+        const isLocalDevServer = !isNative && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        elements.liveAdminIframe.src = isLocalDevServer ? '/api/proxy?url=' + encodeURIComponent(site.url) : site.url;
 
         let loaded = false;
         elements.liveAdminIframe.onload = () => {
           loaded = true;
           elements.browserLoader.style.opacity = '0';
           setTimeout(() => elements.browserLoader.classList.add('hidden'), 250);
+        };
+
+        elements.liveAdminIframe.onerror = () => {
+          elements.frameNoticeBanner.classList.remove('hidden');
         };
 
         setTimeout(() => {
@@ -2357,16 +2362,32 @@
     showToast(`Switched to ${next.toUpperCase()} layout`);
   }
 
-  function openExternal() {
+  async function openExternal() {
     const site = state.sites.find(s => s.id === state.activeSiteId);
-    if (!site) return;
+    if (!site || !site.url) return;
+
+    if (site.adminId) {
+      copyText(site.adminId, 'Admin ID');
+    }
 
     const isNativeApk = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
     if (isNativeApk) {
-      window.location.href = site.url;
-    } else {
-      window.open(site.url, '_blank');
+      const Browser = window.Capacitor?.Plugins?.Browser;
+      if (Browser) {
+        try {
+          await Browser.open({
+            url: site.url,
+            windowName: '_blank',
+            toolbarColor: '#000000',
+            presentationStyle: 'popover'
+          });
+          return;
+        } catch (e) {
+          console.warn('Capacitor Browser error:', e);
+        }
+      }
     }
+    window.open(site.url, '_blank', 'noopener,noreferrer');
   }
 
   function reloadBrowser() {
@@ -2377,8 +2398,10 @@
     elements.browserLoader.classList.remove('hidden');
     elements.browserLoader.style.opacity = '1';
 
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    elements.liveAdminIframe.src = (isLocal ? '/api/proxy?url=' + encodeURIComponent(site.url) : site.url) + '&_ts=' + Date.now();
+    const isNative = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+    const isLocalDevServer = !isNative && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const targetUrl = isLocalDevServer ? '/api/proxy?url=' + encodeURIComponent(site.url) : site.url;
+    elements.liveAdminIframe.src = targetUrl + (targetUrl.includes('?') ? '&' : '?') + '_ts=' + Date.now();
 
     setTimeout(() => {
       elements.bReloadIcon.style.animation = '';
@@ -3121,6 +3144,12 @@
 
   // --- Security & Biometric Lock ---
   function checkPinLock() {
+    if (sessionStorage.getItem('omni_session_unlocked') === 'true') {
+      elements.pinLockModal.classList.add('hidden');
+      setTimeout(checkVaultFolderSetup, 300);
+      return;
+    }
+
     if (state.pinEnabled && state.appPin) {
       elements.pinLockModal.classList.remove('hidden');
       state.currentEnteredPin = '';
@@ -3259,6 +3288,7 @@
   }
 
   function unlockAppSecurity(msg = 'Console Unlocked') {
+    sessionStorage.setItem('omni_session_unlocked', 'true');
     elements.pinLockModal.classList.add('hidden');
     if (elements.pinError) elements.pinError.classList.add('hidden');
     state.currentEnteredPin = '';
