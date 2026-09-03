@@ -1,21 +1,21 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Project specific ProGuard / R8 rules for maximum performance & zero lag
+-keepattributes SourceFile,LineNumberTable,*Annotation*
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep Capacitor Bridge & Javascript Interfaces
+-keep public class com.getcapacitor.** { *; }
+-keep class * implements com.getcapacitor.Plugin { *; }
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep all installed Capacitor plugins safe
+-keep class com.capgo.nativebiometric.** { *; }
+-keep class com.capacitorjs.plugins.localnotifications.** { *; }
+-keep class com.capacitorjs.plugins.filesystem.** { *; }
+-keep class com.capacitorjs.plugins.preferences.** { *; }
+-keep class com.capacitorjs.plugins.browser.** { *; }
+-keep class com.capacitorjs.plugins.app.** { *; }
+-keep class com.capacitorjs.plugins.statusbar.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+-dontwarn com.getcapacitor.**
+-dontwarn androidx.**

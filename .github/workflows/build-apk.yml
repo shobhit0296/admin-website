@@ -39,15 +39,15 @@ jobs:
           npx cap add android || true
           npx cap sync android
 
-      - name: Build Android APK with Gradle
+      - name: Build Optimized Android APK with Gradle
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleRelease --stacktrace
 
-      - name: Upload APK Artifact
+      - name: Upload Optimized APK Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ShobhitAdminHub-debug-apk
-          path: android/app/build/outputs/apk/debug/*.apk
+          name: ShobhitAdminHub-optimized-apk
+          path: android/app/build/outputs/apk/release/*.apk
           retention-days: 14
