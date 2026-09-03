@@ -1570,7 +1570,11 @@
     isLockedOut: false,
     lockoutTimerId: null,
     searchQuery: '',
-    deckSubtab: 'primary'
+    deckSubtab: 'primary',
+    vaultFolder: localStorage.getItem('omni_vault_folder') || 'Documents/AdminHubVault',
+    vaultPath: localStorage.getItem('omni_vault_path') || 'Documents/AdminHubVault/admin-hub-vault.json',
+    vaultDirHandle: null,
+    lastVaultSyncTime: null
   };
 
   // --- DOM Elements ---
@@ -1706,11 +1710,22 @@
     importDataBtn: document.getElementById('importDataBtn'),
     importFileInput: document.getElementById('importFileInput'),
 
+    // Vault Storage Elements
+    vaultFolderDisplay: document.getElementById('vaultFolderDisplay'),
+    changeVaultFolderBtn: document.getElementById('changeVaultFolderBtn'),
+    syncVaultNowBtn: document.getElementById('syncVaultNowBtn'),
+    vaultSyncStatusText: document.getElementById('vaultSyncStatusText'),
+    vaultFolderPromptModal: document.getElementById('vaultFolderPromptModal'),
+    btnPickDeviceFolder: document.getElementById('btnPickDeviceFolder'),
+    btnDefaultDeviceFolder: document.getElementById('btnDefaultDeviceFolder'),
+    modalVaultPathPreview: document.getElementById('modalVaultPathPreview'),
+
     // PIN & Fingerprint Lock
     pinLockModal: document.getElementById('pinLockModal'),
     pinCard: document.getElementById('pinCard'),
     pinDots: document.getElementById('pinDots'),
     pinKeypad: document.getElementById('pinKeypad') || document.querySelector('.pin-keypad'),
+    pinSubmitBtn: document.getElementById('pinSubmitBtn'),
     pinError: document.getElementById('pinError'),
     pinLockoutBanner: document.getElementById('pinLockoutBanner'),
     lockoutTimer: document.getElementById('lockoutTimer'),
@@ -1794,9 +1809,112 @@
     }
   }
 
+  // --- Device Storage Vault Engine ---
+  async function saveToDeviceVault(manual = false) {
+    const vaultData = {
+      vaultVersion: 3,
+      app: 'Shobhit Admin Hub',
+      exportedAt: new Date().toISOString(),
+      vaultPath: state.vaultPath || 'Documents/AdminHubVault/admin-hub-vault.json',
+      totalWebsites: state.sites.length,
+      websites: state.sites.map(s => ({
+        id: s.id,
+        name: s.name,
+        url: s.url,
+        adminRoute: s.adminRoute,
+        platform: s.platform,
+        status: s.status,
+        adminId: s.adminId || '',
+        adminPassword: s.adminPassword || '',
+        notes: s.notes || '',
+        color: s.color || '#181818',
+        defaultMode: s.defaultMode || 'mobile',
+        vpsUsage: s.vpsUsage,
+        storageUsed: s.storageUsed,
+        storageTotal: s.storageTotal,
+        activeMembers: s.activeMembers
+      })),
+      databaseRecords: state.records || {},
+      securityConfig: {
+        pinEnabled: state.pinEnabled,
+        biometricEnabled: state.biometricEnabled,
+        vpsAlertsEnabled: state.vpsAlertsEnabled,
+        autoRefreshInterval: state.autoRefreshInterval
+      }
+    };
+
+    const jsonString = JSON.stringify(vaultData, null, 2);
+
+    // 1. Native Capacitor Filesystem (on Android phone/tablet)
+    const Filesystem = window.Capacitor?.Plugins?.Filesystem;
+    if (Filesystem) {
+      try {
+        await Filesystem.writeFile({
+          path: 'AdminHubVault/admin-hub-vault.json',
+          directory: 'DOCUMENTS',
+          data: jsonString,
+          recursive: true
+        });
+        state.lastVaultSyncTime = new Date();
+        updateVaultStatusDisplay();
+        if (manual) showToast('✓ Vault saved to Documents/AdminHubVault/admin-hub-vault.json');
+        return;
+      } catch (err) {
+        console.warn('Native Capacitor Filesystem write error:', err);
+      }
+    }
+
+    // 2. Web File System Access API (when folder is picked)
+    if (state.vaultDirHandle) {
+      try {
+        const fileHandle = await state.vaultDirHandle.getFileHandle('admin-hub-vault.json', { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(jsonString);
+        await writable.close();
+        state.lastVaultSyncTime = new Date();
+        updateVaultStatusDisplay();
+        if (manual) showToast(`✓ Vault saved in folder: ${state.vaultDirHandle.name}`);
+        return;
+      } catch (err) {
+        console.warn('Web File System Access write error:', err);
+      }
+    }
+
+    // 3. Fallback: LocalStorage snapshot + download if manually clicked
+    localStorage.setItem('omni_vault_snapshot_v3', jsonString);
+    state.lastVaultSyncTime = new Date();
+    updateVaultStatusDisplay();
+    if (manual) {
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'admin-hub-vault.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('✓ admin-hub-vault.json downloaded to device');
+    }
+  }
+
+  function updateVaultStatusDisplay() {
+    if (elements.vaultFolderDisplay) {
+      elements.vaultFolderDisplay.textContent = state.vaultPath || 'Documents/AdminHubVault/admin-hub-vault.json';
+    }
+    if (elements.modalVaultPathPreview) {
+      elements.modalVaultPathPreview.textContent = `📁 [Device Storage] ${state.vaultPath || 'Documents/AdminHubVault/admin-hub-vault.json'}`;
+    }
+    if (elements.vaultSyncStatusText) {
+      const timeStr = state.lastVaultSyncTime 
+        ? `Saved ${state.lastVaultSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` 
+        : 'Auto-saving live website data & passwords';
+      elements.vaultSyncStatusText.textContent = timeStr;
+    }
+  }
+
   function saveSites() {
     try {
       localStorage.setItem('omni_sites_v3', JSON.stringify(state.sites));
+      saveToDeviceVault(false);
     } catch (err) {
       console.error('Failed to save sites:', err);
     }
@@ -1805,6 +1923,7 @@
   function saveRecords() {
     try {
       localStorage.setItem('omni_records_v1', JSON.stringify(state.records));
+      saveToDeviceVault(false);
     } catch (err) {
       console.error('Failed to save records:', err);
     }
@@ -2623,8 +2742,75 @@
 
   // --- Settings & PIN ---
   function setupSettings() {
+    // Vault Storage Controls
+    updateVaultStatusDisplay();
+
+    if (elements.changeVaultFolderBtn) {
+      elements.changeVaultFolderBtn.addEventListener('click', () => {
+        if (elements.vaultFolderPromptModal) {
+          elements.vaultFolderPromptModal.classList.remove('hidden');
+        }
+      });
+    }
+
+    if (elements.syncVaultNowBtn) {
+      elements.syncVaultNowBtn.addEventListener('click', () => {
+        saveToDeviceVault(true);
+      });
+    }
+
+    // Modal Folder Actions
+    if (elements.btnPickDeviceFolder) {
+      elements.btnPickDeviceFolder.addEventListener('click', async () => {
+        if ('showDirectoryPicker' in window) {
+          try {
+            const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+            state.vaultDirHandle = dirHandle;
+            state.vaultFolder = dirHandle.name;
+            state.vaultPath = `${dirHandle.name}/admin-hub-vault.json`;
+            localStorage.setItem('omni_vault_folder', state.vaultFolder);
+            localStorage.setItem('omni_vault_path', state.vaultPath);
+            localStorage.setItem('omni_vault_setup_completed', 'true');
+            if (elements.vaultFolderPromptModal) {
+              elements.vaultFolderPromptModal.classList.add('hidden');
+            }
+            await saveToDeviceVault(true);
+            return;
+          } catch (e) {
+            if (e.name === 'AbortError') return;
+            console.warn('Directory picker fallback:', e);
+          }
+        }
+
+        // Fallback for Android / APK / mobile browsers
+        state.vaultFolder = 'Documents/AdminHubVault';
+        state.vaultPath = 'Documents/AdminHubVault/admin-hub-vault.json';
+        localStorage.setItem('omni_vault_folder', state.vaultFolder);
+        localStorage.setItem('omni_vault_path', state.vaultPath);
+        localStorage.setItem('omni_vault_setup_completed', 'true');
+        if (elements.vaultFolderPromptModal) {
+          elements.vaultFolderPromptModal.classList.add('hidden');
+        }
+        await saveToDeviceVault(true);
+      });
+    }
+
+    if (elements.btnDefaultDeviceFolder) {
+      elements.btnDefaultDeviceFolder.addEventListener('click', async () => {
+        state.vaultFolder = 'Documents/AdminHubVault';
+        state.vaultPath = 'Documents/AdminHubVault/admin-hub-vault.json';
+        localStorage.setItem('omni_vault_folder', state.vaultFolder);
+        localStorage.setItem('omni_vault_path', state.vaultPath);
+        localStorage.setItem('omni_vault_setup_completed', 'true');
+        if (elements.vaultFolderPromptModal) {
+          elements.vaultFolderPromptModal.classList.add('hidden');
+        }
+        await saveToDeviceVault(true);
+      });
+    }
+
     elements.homeSettingsBtn.addEventListener('click', () => {
-      const hasValidPin = /^\d{4}$/.test(state.appPin);
+      const hasValidPin = /^\d{4,6}$/.test(state.appPin);
       elements.pinToggle.checked = state.pinEnabled && hasValidPin;
       if (elements.biometricToggle) {
         elements.biometricToggle.checked = state.biometricEnabled !== false;
@@ -2652,6 +2838,7 @@
         }
       }
 
+      updateVaultStatusDisplay();
       elements.settingsModal.classList.remove('hidden');
     });
 
@@ -2702,7 +2889,7 @@
     // Toggle Require PIN Lock
     elements.pinToggle.addEventListener('change', () => {
       const isChecked = elements.pinToggle.checked;
-      const hasValidPin = /^\d{4}$/.test(state.appPin);
+      const hasValidPin = /^\d{4,6}$/.test(state.appPin);
 
       if (isChecked) {
         // Turning ON: Always require setting a new passcode!
@@ -2820,7 +3007,7 @@
         if (elements.pinSetContainer) elements.pinSetContainer.classList.add('hidden');
         if (elements.pinSetupMsg) elements.pinSetupMsg.classList.add('hidden');
         // Restore toggle to actual state
-        elements.pinToggle.checked = Boolean(state.pinEnabled && /^\d{4}$/.test(state.appPin));
+        elements.pinToggle.checked = Boolean(state.pinEnabled && /^\d{4,6}$/.test(state.appPin));
       });
     }
 
@@ -2839,8 +3026,8 @@
         }
       };
 
-      if (!/^\d{4}$/.test(newPin)) {
-        showPinMsg('Please enter exactly 4 digits for New PIN.', true);
+      if (!/^\d{4,6}$/.test(newPin)) {
+        showPinMsg('Please enter between 4 and 6 digits for New PIN.', true);
         if (navigator.vibrate) navigator.vibrate(80);
         if (elements.newPinInput) elements.newPinInput.focus();
         return;
@@ -2945,6 +3132,15 @@
       }
     } else {
       elements.pinLockModal.classList.add('hidden');
+      setTimeout(checkVaultFolderSetup, 300);
+    }
+  }
+
+  function checkVaultFolderSetup() {
+    const isSetupDone = localStorage.getItem('omni_vault_setup_completed') === 'true';
+    if (!isSetupDone && elements.vaultFolderPromptModal) {
+      updateVaultStatusDisplay();
+      elements.vaultFolderPromptModal.classList.remove('hidden');
     }
   }
 
@@ -3074,6 +3270,7 @@
     if (elements.pinLockoutBanner) elements.pinLockoutBanner.classList.add('hidden');
     updatePinDots();
     showToast(msg);
+    setTimeout(checkVaultFolderSetup, 400);
   }
 
   // --- VPS Usage Threshold Reminder & Notification Engine ---
@@ -3248,14 +3445,15 @@
   function handlePinInput(num) {
     if (state.isLockedOut) return;
 
-    if (state.currentEnteredPin.length < 4) {
+    if (state.currentEnteredPin.length < 6) {
       state.currentEnteredPin += num;
       if (navigator.vibrate) {
         try { navigator.vibrate(20); } catch (e) {}
       }
       updatePinDots();
 
-      if (state.currentEnteredPin.length === 4) {
+      const expectedLength = (state.appPin && state.appPin.length >= 4) ? state.appPin.length : 4;
+      if (state.currentEnteredPin.length === expectedLength) {
         setTimeout(() => {
           verifyEnteredPin();
         }, 140);
@@ -3347,6 +3545,15 @@
     if (elements.pinKeypad) {
       elements.pinKeypad.querySelectorAll('.key-btn[data-key]').forEach(btn => {
         btn.addEventListener('click', () => handlePinInput(btn.dataset.key));
+      });
+    }
+
+    if (elements.pinSubmitBtn) {
+      elements.pinSubmitBtn.addEventListener('click', () => {
+        if (state.isLockedOut) return;
+        if (state.currentEnteredPin.length >= 4) {
+          verifyEnteredPin();
+        }
       });
     }
 
