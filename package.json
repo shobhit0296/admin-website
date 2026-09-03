@@ -1,0 +1,22 @@
+{
+  "name": "shobhit-admin-hub",
+  "version": "1.0.0",
+  "description": "Shobhit Admin Hub - Multi-Site Live Console",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx -y serve www -l 3000",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/app": "^6.0.1",
+    "@capacitor/browser": "^6.0.1",
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/local-notifications": "^6.0.0",
+    "@capacitor/preferences": "^6.0.2",
+    "@capacitor/status-bar": "^6.0.1",
+    "@capgo/capacitor-native-biometric": "^6.0.4"
+  }
+}

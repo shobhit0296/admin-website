@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#090d16" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Shobhit Admin Hub - Multi-Site Live Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css?v=3" />
+</head>
+<body class="theme-dark">
+
+  <!-- Security PIN Lock Screen -->
+  <div id="pinLockModal" class="pin-modal-overlay hidden">
+    <div class="pin-card">
+      <div class="pin-icon-box">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h2 class="pin-title">Shobhit Admin Hub Security</h2>
+      <p class="pin-desc">Enter 4-digit PIN to access live admin consoles</p>
+      
+      <div class="pin-dots" id="pinDots">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+
+      <div class="pin-keypad">
+        <button class="key-btn" data-key="1">1</button>
+        <button class="key-btn" data-key="2">2</button>
+        <button class="key-btn" data-key="3">3</button>
+        <button class="key-btn" data-key="4">4</button>
+        <button class="key-btn" data-key="5">5</button>
+        <button class="key-btn" data-key="6">6</button>
+        <button class="key-btn" data-key="7">7</button>
+        <button class="key-btn" data-key="8">8</button>
+        <button class="key-btn" data-key="9">9</button>
+        <button class="key-btn text-btn" id="forgotPinBtn">Reset</button>
+        <button class="key-btn data-key" data-key="0">0</button>
+        <button class="key-btn del-btn" id="pinBackspaceBtn">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+            <line x1="18" y1="9" x2="12" y2="15"></line>
+            <line x1="12" y1="9" x2="18" y2="15"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Fingerprint Prompt Box -->
+      <div class="biometric-prompt-box">
+        <button class="btn-fingerprint-unlock" id="fingerprintUnlockBtn" title="Scan Fingerprint to Unlock">
+          <div class="fp-pulse-ring"></div>
+          <svg class="fp-svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"></path>
+            <path d="M14 13.12c0 2.38 0 6.38-1 8.88"></path>
+            <path d="M2 16h.01"></path>
+            <path d="M21.8 16c.2-2 .131-5.354 0-6"></path>
+            <path d="M9 6.8a6 6 0 0 1 9 5.2c0 .47 0 1.17-.02 2"></path>
+            <path d="M5.58 10a8.01 8.01 0 0 1 14.82 2.36"></path>
+            <path d="M8.5 15.5c1.5-1 3.5-1 5 0"></path>
+            <path d="M7 19.5c3-1.5 7-1.5 10 0"></path>
+            <path d="M4.5 13.5c.5-4 4-7.5 8.5-7.5s8 3.5 8.5 7.5"></path>
+          </svg>
+          <span class="fp-label">Scan Fingerprint to Unlock</span>
+        </button>
+      </div>
+
+      <div id="pinError" class="pin-error hidden">Incorrect PIN. Try again.</div>
+    </div>
+  </div>
+
+  <!-- VIEW 1: HOME PAGE HUB (Single Column of Websites + Add Button) -->
+  <section class="view-screen active" id="homeHubView">
+    <!-- Home Header -->
+    <header class="home-header">
+      <div class="home-brand">
+        <div class="hub-logo">SA</div>
+        <div>
+          <h1 class="hub-title">Shobhit Admin Hub</h1>
+          <p class="hub-subtitle">Live Multi-Site Console</p>
+        </div>
+      </div>
+      <div class="home-header-actions">
+        <button class="btn-top-add" id="openAddSiteBtn" title="Add New Admin Website">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>+ Add Website</span>
+        </button>
+        <button class="icon-btn" id="homeSettingsBtn" title="Settings & Backup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Home Banner / Status -->
+    <div class="home-hero-banner">
+      <div class="hero-status">
+        <span class="live-dot-pulse"></span>
+        <span class="hero-status-text"><strong id="connectedCount">3</strong> Live Admin Panels Connected</span>
+      </div>
+      <div class="hero-autorefresh-indicator" id="autoRefreshIndicator" title="Live Auto-Refresh Active">
+        <span class="refresh-spinner-dot" id="refreshSpinnerDot"></span>
+        <span id="autoRefreshText">Live Sync: Active</span>
+      </div>
+    </div>
+
+    <!-- Search Input -->
+    <div class="home-search-bar">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="homeSearchInput" placeholder="Search your websites..." />
+    </div>
+
+    <!-- Section Filter Pills -->
+    <div class="home-sections-scroll" id="homeSectionsFilter">
+      <button class="section-filter-pill active" data-section="all">
+        <span>All Websites</span>
+        <span class="pill-count" id="pillAllCount">3</span>
+      </button>
+      <button class="section-filter-pill" data-section="directory">
+        <span>📁 Directory & Hubs</span>
+        <span class="pill-count" id="pillDirectoryCount">2</span>
+      </button>
+      <button class="section-filter-pill" data-section="media">
+        <span>🎬 Movies & Media</span>
+        <span class="pill-count" id="pillMediaCount">1</span>
+      </button>
+      <button class="section-filter-pill" data-section="ecommerce">
+        <span>🛍️ E-Commerce</span>
+        <span class="pill-count" id="pillEcommerceCount">0</span>
+      </button>
+      <button class="section-filter-pill" data-section="custom">
+        <span>⚡ Custom Panels</span>
+        <span class="pill-count" id="pillCustomCount">0</span>
+      </button>
+    </div>
+
+    <!-- Single-Column Websites List -->
+    <main class="home-column-container">
+      <div class="sites-column" id="sitesColumnList">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </main>
+  </section>
+
+  <!-- VIEW 2: IN-BUILT BROWSER SYSTEM (Live Admin Console) -->
+  <section class="view-screen hidden" id="browserView">
+    <!-- In-Built Browser Header Bar -->
+    <header class="browser-nav" id="browserNav">
+      <div class="b-nav-left">
+        <!-- Back to Home Hub Button -->
+        <button class="b-back-btn" id="backToHomeBtn" title="Back to All Websites">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>Home</span>
+        </button>
+      </div>
+
+      <div class="b-nav-center">
+        <div class="b-site-title-box">
+          <span class="live-dot-pulse small"></span>
+          <img id="bSiteFavicon" class="b-mini-icon" src="" alt="Site" />
+          <span class="b-site-name" id="bSiteName">Loading...</span>
+        </div>
+      </div>
+
+      <div class="b-nav-right">
+        <!-- Desktop / Mobile Viewport Toggle -->
+        <button class="icon-btn-compact" id="bViewModeToggleBtn" title="Toggle Desktop/Mobile Layout">
+          <span id="bModeLabel" class="b-mode-pill">Mobile</span>
+        </button>
+
+        <!-- Reload Live Panel -->
+        <button class="icon-btn-compact" id="bReloadBtn" title="Hard Reload">
+          <svg id="bReloadIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+          </svg>
+        </button>
+
+        <!-- Launch External / Direct In-App Browser -->
+        <button class="icon-btn-compact" id="bLaunchExternalBtn" title="Launch Full Native Browser">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Admin Panel View Switcher Tabs: [ ⚡ Internal Admin Panel ] | [ 🌐 Live Webview ] -->
+    <div class="panel-mode-tabs-bar">
+      <button class="panel-tab-btn active" id="tabInternalPanelBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="9"></rect>
+          <rect x="14" y="3" width="7" height="5"></rect>
+          <rect x="14" y="12" width="7" height="9"></rect>
+          <rect x="3" y="16" width="7" height="5"></rect>
+        </svg>
+        <span>Internal Panel</span>
+      </button>
+      <button class="panel-tab-btn" id="tabLiveWebviewBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+        <span>Live Webview</span>
+      </button>
+    </div>
+
+    <!-- VIEW A: RICH INTERNAL ADMIN PANEL -->
+    <div class="internal-admin-deck" id="panelInternalView">
+      <!-- Site Status & Quick Stats Header -->
+      <div class="deck-hero-card">
+        <div class="deck-hero-top">
+          <div class="deck-site-info">
+            <h2 id="deckSiteTitle">Website Admin Panel</h2>
+            <div class="deck-meta-row">
+              <span class="deck-badge live" id="deckLiveBadge">● Live (200 OK)</span>
+              <span class="deck-badge" id="deckRouteBadge">/shobhitadmin</span>
+              <span class="deck-badge" id="deckPlatformBadge">Next.js 14 • Vercel</span>
+            </div>
+          </div>
+          <button class="btn-primary-compact" id="deckAddNewBtn">+ Add Item</button>
+        </div>
+
+        <!-- 4 Metric Cards -->
+        <div class="deck-metrics-grid">
+          <div class="metric-card">
+            <span class="metric-title" id="metricTitle1">Total Content</span>
+            <span class="metric-value" id="metricVal1">0</span>
+            <span class="metric-sub" id="metricSub1">Active in database</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title" id="metricTitle2">Daily Views</span>
+            <span class="metric-value" id="metricVal2">3.4k</span>
+            <span class="metric-sub positive" id="metricSub2">↑ +14% this week</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title" id="metricTitle3">Pending Queue</span>
+            <span class="metric-value" id="metricVal3">4</span>
+            <span class="metric-sub" id="metricSub3">Awaiting review</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title" id="metricTitle4">System Health</span>
+            <span class="metric-value health" id="metricVal4">99.8%</span>
+            <span class="metric-sub" id="metricSub4">Vercel Edge OK</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Bar -->
+      <div class="deck-actions-strip">
+        <button class="strip-action-btn" id="deckSyncBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          <span>Push Live Sync</span>
+        </button>
+        <button class="strip-action-btn" id="deckCopyIdBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span id="deckAdminIdText">Copy Admin ID</span>
+        </button>
+        <button class="strip-action-btn" id="deckCopyPassBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Copy Password</span>
+        </button>
+      </div>
+
+      <!-- Content Management List -->
+      <div class="deck-content-section">
+        <div class="deck-content-header">
+          <div class="deck-header-left">
+            <h3 id="deckContentHeading">Manage Content</h3>
+            <div class="deck-subtabs-row" id="deckSubtabsRow">
+              <button class="deck-subtab-btn active" id="subtabPrimaryBtn">Sites (76)</button>
+              <button class="deck-subtab-btn" id="subtabSecondaryBtn">Requests (85)</button>
+              <button class="deck-subtab-btn refresh-btn" id="deckRefreshLogosBtn" title="Auto-fetch logos from websites">🔄 Refresh Logos</button>
+            </div>
+          </div>
+          <div class="deck-search-box">
+            <input type="text" id="deckSearchInput" placeholder="Filter items..." />
+          </div>
+        </div>
+
+        <div class="deck-items-list" id="deckItemsList">
+          <!-- Dynamically populated per website -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW B: LIVE WEBVIEW CONSOLE -->
+    <div class="webview-console-wrapper hidden" id="panelWebviewContainer">
+      <!-- Quick Credentials Helper Bar (1-Tap Copy ID & Password) -->
+      <div class="credentials-helper-bar" id="credentialsHelperBar">
+        <div class="cred-left">
+          <span class="cred-label">CREDENTIALS:</span>
+          <button class="cred-pill-btn" id="copyAdminIdBtn" title="Copy Admin ID">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span id="adminIdDisplay">ID: None</span>
+            <span class="copy-badge">Copy</span>
+          </button>
+
+          <button class="cred-pill-btn" id="copyAdminPassBtn" title="Copy Admin Password">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>Password</span>
+            <span class="copy-badge">Copy</span>
+          </button>
+        </div>
+
+        <div class="cred-right">
+          <span class="current-url-text" id="bUrlText">https://...</span>
+        </div>
+      </div>
+
+      <!-- Live In-Built Browser Viewport Container -->
+      <div class="browser-viewport" id="browserViewport">
+        <!-- Loading Spinner Overlay -->
+        <div class="browser-loader" id="browserLoader">
+          <div class="spinner"></div>
+          <p class="loader-title">Connecting to Live Admin...</p>
+          <span class="loader-subtitle" id="loaderSubText"></span>
+        </div>
+
+        <!-- IFrame Container -->
+        <div class="iframe-container" id="iframeContainer">
+          <iframe 
+            id="liveAdminIframe" 
+            src="about:blank" 
+            title="Live Website Admin Console" 
+            allow="camera; microphone; geolocation; clipboard-read; clipboard-write; storage-access"
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads allow-top-navigation">
+          </iframe>
+        </div>
+
+        <!-- Smart Security / Restrict Notice Banner -->
+        <div class="frame-notice-banner hidden" id="frameNoticeBanner">
+          <div class="notice-info">
+            <span class="notice-badge">X-FRAME-OPTIONS</span>
+            <p>This website server enforces strict frame headers. Tap below to launch directly with full session & cookie sync.</p>
+          </div>
+          <button class="btn-notice-action" id="noticeOpenExternalBtn">Open In Direct In-App Browser</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Floating Bottom Switcher -->
+    <div class="b-floating-switcher" id="bFloatingSwitcher">
+      <div class="b-chips-scroll" id="bChipsScroll">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal: Add New Record to Website Admin Panel -->
+  <div class="modal-backdrop hidden" id="recordModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="recordModalTitle">Add New Content</h3>
+        <button class="icon-btn-close" id="recordModalCloseBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form class="modal-form" id="recordForm">
+        <div class="form-group">
+          <label for="recTitleInput" id="recTitleLabel">Title / Name *</label>
+          <input type="text" id="recTitleInput" placeholder="e.g. Master Resource or Movie Name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="recUrlInput" id="recUrlLabel">Target URL / Stream Link *</label>
+          <input type="url" id="recUrlInput" placeholder="https://..." required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="recCategoryInput">Category / Genre</label>
+            <input type="text" id="recCategoryInput" placeholder="e.g. Tools, Action, UI" />
+          </div>
+          <div class="form-group col-6">
+            <label for="recBadgeInput">Badge / Tag</label>
+            <input type="text" id="recBadgeInput" placeholder="e.g. Verified, 4K HDR, MIT" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="recDescInput">Description / Details</label>
+          <input type="text" id="recDescInput" placeholder="Short description or tagline" />
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" id="cancelRecordModalBtn">Cancel</button>
+          <button type="submit" class="btn-save" id="saveRecordBtn">Save & Push Live</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add / Edit Website Modal (With Admin ID & Password) -->
+  <div class="modal-backdrop hidden" id="siteModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="modalTitle">Link Website Admin</h3>
+        <button class="icon-btn-close" id="modalCloseBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="siteForm" class="modal-form">
+        <input type="hidden" id="siteId" value="" />
+
+        <div class="form-group">
+          <label for="siteNameInput">Website Name *</label>
+          <input type="text" id="siteNameInput" placeholder="e.g. AllSiteHub, MoviesNet, FreeWebStuff" required />
+        </div>
+
+        <div class="form-group">
+          <label for="siteUrlInput">Live Admin URL *</label>
+          <input type="url" id="siteUrlInput" placeholder="https://example.com/admin or /wp-admin" required />
+          <span class="input-hint">Direct URL to your login or admin dashboard page</span>
+        </div>
+
+        <!-- Section / Group Selector -->
+        <div class="form-group">
+          <label for="siteSectionSelect">Website Section / Group *</label>
+          <select id="siteSectionSelect">
+            <option value="directory">📁 Directory & Resource Hubs</option>
+            <option value="media">🎬 Movies & Streaming</option>
+            <option value="ecommerce">🛍️ E-Commerce & Stores</option>
+            <option value="custom">⚡ Custom Web Dashboards & Tools</option>
+            <option value="wordpress">🌐 WordPress Websites</option>
+            <option value="other">📌 Other Platforms</option>
+          </select>
+        </div>
+
+        <!-- Platform Presets -->
+        <div class="form-group">
+          <label>Platform Preset Helpers</label>
+          <div class="preset-buttons">
+            <button type="button" class="preset-btn" data-preset="custom">Custom Panel</button>
+            <button type="button" class="preset-btn" data-preset="wp">WordPress (/wp-admin)</button>
+            <button type="button" class="preset-btn" data-preset="shopify">Shopify Admin</button>
+            <button type="button" class="preset-btn" data-preset="cpanel">cPanel (:2083)</button>
+          </div>
+        </div>
+
+        <!-- Admin ID & Password Fields -->
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="siteAdminIdInput">Admin ID / Email / Username</label>
+            <input type="text" id="siteAdminIdInput" placeholder="admin / you@domain.com" autocomplete="off" />
+          </div>
+
+          <div class="form-group col-6">
+            <label for="siteAdminPasswordInput">Admin Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="siteAdminPasswordInput" placeholder="••••••••" autocomplete="new-password" />
+              <button type="button" class="toggle-eye-btn" id="togglePassEyeBtn" title="Show/Hide Password">
+                <svg id="eyeShowIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg id="eyeHideIcon" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <span class="input-hint">Credentials are saved locally on your phone for 1-tap fast login.</span>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="siteColorSelect">Card Color</label>
+            <select id="siteColorSelect">
+              <option value="#38bdf8">Sky Cyan</option>
+              <option value="#f43f5e">Rose Red</option>
+              <option value="#10b981">Emerald Green</option>
+              <option value="#8b5cf6">Violet Purple</option>
+              <option value="#f59e0b">Amber Orange</option>
+            </select>
+          </div>
+
+          <div class="form-group col-6">
+            <label for="siteDefaultModeSelect">Default Layout</label>
+            <select id="siteDefaultModeSelect">
+              <option value="mobile">Mobile Optimized</option>
+              <option value="desktop">Desktop Mode</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="siteNotesInput">Notes / Description (Optional)</label>
+          <input type="text" id="siteNotesInput" placeholder="e.g. Master panel for users & directory" />
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" id="cancelSiteModalBtn">Cancel</button>
+          <button type="submit" class="btn-save" id="saveSiteBtn">Save & Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Settings & Backup Modal -->
+  <div class="modal-backdrop hidden" id="settingsModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3>Shobhit Admin Hub Settings</h3>
+        <button class="icon-btn-close" id="settingsCloseBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="settings-content">
+        <div class="settings-section">
+          <h4>Security Lock</h4>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Require 4-Digit PIN</span>
+              <span class="setting-subtitle">Locks the app upon opening to protect your live admin panels</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="pinToggle" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Phone Fingerprint / Biometrics</span>
+              <span class="setting-subtitle">Use your default phone fingerprint sensor to unlock the APK</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="biometricToggle" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="pin-set-container hidden" id="pinSetContainer">
+            <input type="password" id="newPinInput" maxlength="4" placeholder="Enter 4-digit PIN" />
+            <button class="btn-sm-primary" id="savePinBtn">Set PIN</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h4>VPS Usage Notifications & Alerts</h4>
+          <p class="section-desc">Get phone push notifications whenever any website server crosses VPS usage thresholds (20%, 40%, 60%, 80%, 95%).</p>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">VPS Usage Push Alerts</span>
+              <span class="setting-subtitle">Send phone notifications at 20%, 40%, 60%, 80%, 95%</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="vpsAlertsToggle" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="vps-thresholds-chips">
+            <span class="vps-chip">20% Usage</span>
+            <span class="vps-chip">40% Usage</span>
+            <span class="vps-chip warning">60% Usage</span>
+            <span class="vps-chip high">80% Usage</span>
+            <span class="vps-chip critical">95% Critical</span>
+          </div>
+          <button class="btn-outline btn-test-notif" id="testNotifBtn" type="button" style="margin-top: 10px; width: 100%;">
+            🔔 Send Test Notification Now
+          </button>
+        </div>
+
+        <div class="settings-section">
+          <h4>Live Auto-Refresh Engine</h4>
+          <p class="section-desc">Continuously auto-refreshes all website statuses, VPS load, active members, and database records in real time.</p>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-title">Auto-Refresh Everytime</span>
+              <span class="setting-subtitle">Refreshes metrics continuously and whenever returning to app</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="autoRefreshToggle" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="setting-row" style="margin-top: 6px;">
+            <div class="setting-info">
+              <span class="setting-title">Refresh Frequency</span>
+              <span class="setting-subtitle">How often data auto-updates in background</span>
+            </div>
+            <select id="autoRefreshIntervalSelect" class="settings-select">
+              <option value="3000">Every 3 seconds (Ultra Live)</option>
+              <option value="5000" selected>Every 5 seconds (Recommended)</option>
+              <option value="10000">Every 10 seconds</option>
+              <option value="30000">Every 30 seconds</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h4>Backup & Restore</h4>
+          <p class="section-desc">Export your websites with saved links and credentials to a JSON file.</p>
+          <div class="backup-actions">
+            <button class="btn-outline" id="exportDataBtn">Export Backup JSON</button>
+            <button class="btn-outline" id="importDataBtn">Import Backup</button>
+            <input type="file" id="importFileInput" accept=".json" class="hidden" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-message" id="toastMessage">Done</div>
+
+  <script src="/app.js?v=3"></script>
+</body>
+</html>
