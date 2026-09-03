@@ -620,17 +620,27 @@
               <span class="setting-title">Require PIN Lock</span>
               <span class="setting-subtitle">Prompt for 4-digit PIN on app launch</span>
             </div>
-            <label class="switch">
-              <input type="checkbox" id="pinToggle" />
-              <span class="slider round"></span>
-            </label>
+            <div class="setting-action-group">
+              <button class="btn-clean-text hidden" id="changePinBtn" type="button">Change PIN</button>
+              <label class="switch">
+                <input type="checkbox" id="pinToggle" />
+                <span class="slider round"></span>
+              </label>
+            </div>
           </div>
 
-          <!-- Collapsible PIN Configuration -->
+          <!-- Collapsible PIN Configuration (New PIN & Confirm PIN) -->
           <div class="pin-set-container hidden" id="pinSetContainer">
-            <div class="pin-input-inline">
-              <input type="password" id="newPinInput" maxlength="4" placeholder="Enter 4 digits" />
-              <button class="btn-pin-action" id="savePinBtn">Set PIN</button>
+            <div class="pin-setup-box">
+              <div class="pin-setup-inputs">
+                <input type="password" id="newPinInput" maxlength="4" placeholder="New PIN" inputmode="numeric" />
+                <input type="password" id="confirmPinInput" maxlength="4" placeholder="Confirm PIN" inputmode="numeric" />
+              </div>
+              <div class="pin-setup-actions">
+                <button class="btn-pin-action" id="savePinBtn" type="button">Save PIN</button>
+                <button class="btn-pin-cancel hidden" id="cancelPinBtn" type="button">Cancel</button>
+              </div>
+              <div class="pin-setup-msg hidden" id="pinSetupMsg"></div>
             </div>
           </div>
 
