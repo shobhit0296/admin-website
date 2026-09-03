@@ -1723,7 +1723,9 @@
     // PIN & Fingerprint Lock
     pinLockModal: document.getElementById('pinLockModal'),
     pinCard: document.getElementById('pinCard'),
-    pinDots: document.getElementById('pinDots'),
+    pinDisplayBox: document.getElementById('pinDisplayBox'),
+    pinBulletsContainer: document.getElementById('pinBulletsContainer'),
+    pinBoxPlaceholder: document.getElementById('pinBoxPlaceholder'),
     pinKeypad: document.getElementById('pinKeypad') || document.querySelector('.pin-keypad'),
     pinSubmitBtn: document.getElementById('pinSubmitBtn'),
     pinError: document.getElementById('pinError'),
@@ -3524,15 +3526,31 @@
   }
 
   function updatePinDots() {
-    if (!elements.pinDots) return;
-    const dots = elements.pinDots.querySelectorAll('.dot');
-    dots.forEach((dot, index) => {
-      if (index < state.currentEnteredPin.length) {
-        dot.classList.add('filled');
-      } else {
-        dot.classList.remove('filled');
+    const container = elements.pinBulletsContainer || document.getElementById('pinBulletsContainer');
+    const box = elements.pinDisplayBox || document.getElementById('pinDisplayBox');
+    const placeholder = elements.pinBoxPlaceholder || document.getElementById('pinBoxPlaceholder');
+
+    if (!container || !box) return;
+
+    // Clear and dynamically render only typed bullets (no fixed slot clues!)
+    container.innerHTML = '';
+    const len = state.currentEnteredPin.length;
+
+    if (len > 0) {
+      box.classList.add('has-digits');
+      box.classList.remove('empty');
+      if (placeholder) placeholder.style.display = 'none';
+
+      for (let i = 0; i < len; i++) {
+        const bullet = document.createElement('span');
+        bullet.className = 'pin-bullet';
+        container.appendChild(bullet);
       }
-    });
+    } else {
+      box.classList.remove('has-digits');
+      box.classList.add('empty');
+      if (placeholder) placeholder.style.display = '';
+    }
   }
 
   function setupPinListeners() {

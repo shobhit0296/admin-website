@@ -35,7 +35,7 @@
       </div>
 
       <h2 class="pin-title">Passcode Verification</h2>
-      <p class="pin-desc" id="pinSubtitle">Enter your 4-6 digit master PIN to access console</p>
+      <p class="pin-desc" id="pinSubtitle">Enter master passcode to unlock console</p>
 
       <!-- Lockout Alert Banner -->
       <div id="pinLockoutBanner" class="pin-lockout-banner hidden">
@@ -46,15 +46,12 @@
         <span>Security Cooldown: <strong id="lockoutTimer">30s</strong></span>
       </div>
 
-      <!-- PIN Code Indicator Dots (Supports 4 to 6 digits) -->
-      <div class="pin-dots-wrapper">
-        <div class="pin-dots" id="pinDots">
-          <div class="dot"><span class="dot-inner"></span></div>
-          <div class="dot"><span class="dot-inner"></span></div>
-          <div class="dot"><span class="dot-inner"></span></div>
-          <div class="dot"><span class="dot-inner"></span></div>
-          <div class="dot"><span class="dot-inner"></span></div>
-          <div class="dot"><span class="dot-inner"></span></div>
+      <!-- Unified Secure Passcode Box (Doesn't reveal digit count or slots) -->
+      <div class="pin-box-wrapper">
+        <div class="pin-display-box empty" id="pinDisplayBox">
+          <div class="pin-bullets-container" id="pinBulletsContainer"></div>
+          <span class="pin-box-caret" id="pinBoxCaret"></span>
+          <span class="pin-box-placeholder" id="pinBoxPlaceholder">Enter Master Passcode</span>
         </div>
       </div>
 
