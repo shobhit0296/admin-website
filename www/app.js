@@ -32,7 +32,7 @@
       adminId: 'shobhit',
       adminPassword: 'shobhitallsitehubadmin8115591448',
       section: 'directory',
-      color: '#38bdf8',
+      color: '#181818',
       defaultMode: 'mobile',
       notes: 'AllSiteHub Master Admin Panel'
     },
@@ -1746,6 +1746,9 @@
           if (!s.activeMembers) {
             s.activeMembers = s.id === 'site-allsitehub' ? 142 : s.id === 'site-freewebstuff' ? 89 : 310;
           }
+          if (!s.color || s.color === '#38bdf8' || s.color === '#8b5cf6' || s.color === '#a855f7' || s.color === '#3b82f6') {
+            s.color = '#181818';
+          }
           return s;
         });
       } else {
@@ -2049,7 +2052,7 @@
       } else if (bText.includes('featured') || bText.includes('4k')) {
         badgeClass = 'style="background: rgba(148, 163, 184, 0.12); color: #cbd5e1; border-color: rgba(148, 163, 184, 0.25);"';
       } else if (bText.includes('new')) {
-        badgeClass = 'style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.25);"';
+        badgeClass = 'style="background: #181818; color: #ededed; border-color: #2c2c2c;"';
       } else if (bText.includes('rejected')) {
         badgeClass = 'style="background: rgba(244, 63, 94, 0.12); color: #fb7185; border-color: rgba(244, 63, 94, 0.25);"';
       }
@@ -2064,7 +2067,7 @@
             <span style="font-size: 10px; color: var(--text-muted); background: var(--bg-inset); padding: 1px 6px; border-radius: 4px;">${escapeHtml(item.category || 'General')}</span>
           </div>
           <div class="deck-item-desc" style="margin-top: 3px;">${escapeHtml(item.desc || item.reason || item.url || '')}</div>
-          ${item.url ? `<div style="font-size: 10px; color: #38bdf8; margin-top: 2px; font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(item.url)}</div>` : ''}
+          ${item.url ? `<div style="font-size: 10px; color: #ededed; margin-top: 2px; font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(item.url)}</div>` : ''}
         </div>
         <div class="deck-item-actions">
           ${isRequestView ? `
@@ -2363,7 +2366,7 @@
   function createWebsiteCard(site) {
     const card = document.createElement('div');
     card.className = 'website-card';
-    card.style.borderLeft = `3.5px solid ${site.color || '#38bdf8'}`;
+    card.style.borderLeft = `3.5px solid ${site.color || '#181818'}`;
 
     let domain = '';
     try {
@@ -2381,7 +2384,7 @@
       <div class="site-pure-left">
         <div class="site-icon-box">
           <img class="site-icon-img" src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64" 
-               onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'16\\' height=\\'16\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%2338bdf8\\' stroke-width=\\'2\\'%3E%3Ccircle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/ %3E%3C/svg%3E'" 
+               onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'16\\' height=\\'16\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%23ededed\\' stroke-width=\\'2\\'%3E%3Ccircle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/ %3E%3C/svg%3E'" 
                alt="${escapeHtml(site.name)}" />
         </div>
         <div class="site-pure-title-col">
@@ -2439,7 +2442,7 @@
       const chip = document.createElement('div');
       chip.className = `b-site-chip ${site.id === state.activeSiteId ? 'active' : ''}`;
       chip.innerHTML = `
-        <span class="chip-dot" style="background-color: ${site.color || '#38bdf8'};"></span>
+        <span class="chip-dot" style="background-color: ${site.color || '#181818'};"></span>
         <span>${escapeHtml(site.name)}</span>
       `;
       chip.addEventListener('click', () => {
@@ -2458,7 +2461,7 @@
     elements.siteSectionSelect.value = state.selectedSection !== 'all' ? state.selectedSection : 'custom';
     elements.siteAdminIdInput.value = '';
     elements.siteAdminPasswordInput.value = '';
-    elements.siteColorSelect.value = '#38bdf8';
+    elements.siteColorSelect.value = '#181818';
     elements.siteDefaultModeSelect.value = 'mobile';
     elements.siteNotesInput.value = '';
 
@@ -2479,7 +2482,7 @@
     elements.siteSectionSelect.value = site.section || 'custom';
     elements.siteAdminIdInput.value = site.adminId || '';
     elements.siteAdminPasswordInput.value = site.adminPassword || '';
-    elements.siteColorSelect.value = site.color || '#38bdf8';
+    elements.siteColorSelect.value = site.color || '#181818';
     elements.siteDefaultModeSelect.value = site.defaultMode || 'mobile';
     elements.siteNotesInput.value = site.notes || '';
 
@@ -2592,7 +2595,7 @@
         if (p === 'wp') {
           elements.siteUrlInput.value = base + '/wp-admin/';
           elements.siteSectionSelect.value = 'wordpress';
-          elements.siteColorSelect.value = '#38bdf8';
+          elements.siteColorSelect.value = '#181818';
         } else if (p === 'shopify') {
           elements.siteUrlInput.value = 'https://admin.shopify.com/';
           elements.siteSectionSelect.value = 'ecommerce';
@@ -2604,7 +2607,7 @@
         } else if (p === 'custom') {
           elements.siteUrlInput.value = base + '/adminshobhit';
           elements.siteSectionSelect.value = 'custom';
-          elements.siteColorSelect.value = '#38bdf8';
+          elements.siteColorSelect.value = '#181818';
         }
       });
     });
