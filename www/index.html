@@ -35,7 +35,7 @@
       </div>
 
       <h2 class="pin-title">Passcode Verification</h2>
-      <p class="pin-desc" id="pinSubtitle">Enter your 4-digit master PIN to access console</p>
+      <p class="pin-desc" id="pinSubtitle">Enter your 4-6 digit master PIN to access console</p>
 
       <!-- Lockout Alert Banner -->
       <div id="pinLockoutBanner" class="pin-lockout-banner hidden">
@@ -46,9 +46,11 @@
         <span>Security Cooldown: <strong id="lockoutTimer">30s</strong></span>
       </div>
 
-      <!-- PIN Code Indicator Dots -->
+      <!-- PIN Code Indicator Dots (Supports 4 to 6 digits) -->
       <div class="pin-dots-wrapper">
         <div class="pin-dots" id="pinDots">
+          <div class="dot"><span class="dot-inner"></span></div>
+          <div class="dot"><span class="dot-inner"></span></div>
           <div class="dot"><span class="dot-inner"></span></div>
           <div class="dot"><span class="dot-inner"></span></div>
           <div class="dot"><span class="dot-inner"></span></div>
@@ -67,8 +69,8 @@
         <button class="key-btn" data-key="7"><span class="k-num">7</span><span class="k-sub">PQRS</span></button>
         <button class="key-btn" data-key="8"><span class="k-num">8</span><span class="k-sub">TUV</span></button>
         <button class="key-btn" data-key="9"><span class="k-num">9</span><span class="k-sub">WXYZ</span></button>
-        <button class="key-btn action-key" id="forgotPinBtn" title="Reset Master PIN">
-          <span class="k-action-text">RESET</span>
+        <button class="key-btn action-key" id="pinSubmitBtn" title="Submit PIN">
+          <span class="k-action-text">OK</span>
         </button>
         <button class="key-btn" data-key="0"><span class="k-num">0</span><span class="k-sub">+</span></button>
         <button class="key-btn action-key del-btn" id="pinBackspaceBtn" title="Backspace">
@@ -611,6 +613,25 @@
       </div>
 
       <div class="settings-content">
+        <!-- 0. Device Storage Vault Card -->
+        <div class="settings-card">
+          <div class="settings-card-label">DEVICE STORAGE VAULT</div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-title">Vault Storage Folder</span>
+              <span class="setting-subtitle" id="vaultFolderDisplay">Documents/AdminHubVault/admin-hub-vault.json</span>
+            </div>
+            <button class="btn-clean-text" id="changeVaultFolderBtn" type="button">Change Folder</button>
+          </div>
+          <div class="vault-sync-strip">
+            <div class="vault-sync-status">
+              <span class="vault-live-dot"></span>
+              <span id="vaultSyncStatusText">Auto-saving live website data & passwords</span>
+            </div>
+            <button class="btn-clean-text" id="syncVaultNowBtn" type="button">Sync File Now</button>
+          </div>
+        </div>
+
         <!-- 1. Security Group -->
         <div class="settings-card">
           <div class="settings-card-label">SECURITY & ACCESS</div>
@@ -618,7 +639,7 @@
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-title">Require PIN Lock</span>
-              <span class="setting-subtitle">Prompt for 4-digit PIN on app launch</span>
+              <span class="setting-subtitle" id="pinSettingSubtitle">Prompt for 4-6 digit PIN on app launch</span>
             </div>
             <div class="setting-action-group">
               <button class="btn-clean-text hidden" id="changePinBtn" type="button">Change PIN</button>
@@ -629,18 +650,18 @@
             </div>
           </div>
 
-          <!-- Collapsible PIN Configuration (New PIN, Confirm PIN, or Current PIN to disable) -->
+          <!-- Collapsible PIN Configuration (Supports 4 to 6 Digits) -->
           <div class="pin-set-container hidden" id="pinSetContainer">
             <div class="pin-setup-box">
               <!-- Mode: New PIN & Confirm PIN -->
               <div class="pin-setup-inputs" id="pinNewInputsRow">
-                <input type="password" id="newPinInput" maxlength="4" placeholder="New PIN" inputmode="numeric" />
-                <input type="password" id="confirmPinInput" maxlength="4" placeholder="Confirm PIN" inputmode="numeric" />
+                <input type="password" id="newPinInput" minlength="4" maxlength="6" placeholder="New PIN (4-6 digits)" inputmode="numeric" />
+                <input type="password" id="confirmPinInput" minlength="4" maxlength="6" placeholder="Confirm (4-6 digits)" inputmode="numeric" />
               </div>
 
               <!-- Mode: Current PIN verification to Turn Off -->
               <div class="pin-disable-inputs hidden" id="pinDisableInputsRow">
-                <input type="password" id="currentPinInput" maxlength="4" placeholder="Enter Current PIN to Turn Off" inputmode="numeric" />
+                <input type="password" id="currentPinInput" minlength="4" maxlength="6" placeholder="Current PIN (4-6 digits)" inputmode="numeric" />
               </div>
 
               <div class="pin-setup-actions">
@@ -727,6 +748,40 @@
             <input type="file" id="importFileInput" accept=".json" class="hidden" />
           </div>
         </div>
+      </div>
+    </div>
+  <!-- Device Storage Vault First-Time Setup Modal -->
+  <div class="modal-backdrop hidden" id="vaultFolderPromptModal">
+    <div class="modal-sheet vault-setup-sheet">
+      <div class="vault-setup-header">
+        <div class="vault-setup-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            <path d="M12 11v6"></path>
+            <path d="M9 14h6"></path>
+          </svg>
+        </div>
+        <h3>Device Storage Vault</h3>
+        <p class="vault-setup-desc">
+          Select or create a storage folder on your device. Shobhit Admin Hub will securely save all your live website details, admin IDs, passwords, server metrics, and future records directly to an offline vault file (<code>admin-hub-vault.json</code>).
+        </p>
+      </div>
+
+      <div class="vault-folder-preview">
+        <div class="vault-preview-label">DEVICE STORAGE DESTINATION</div>
+        <div class="vault-preview-path" id="modalVaultPathPreview">📁 [Device Storage] Documents/AdminHubVault/admin-hub-vault.json</div>
+      </div>
+
+      <div class="vault-setup-buttons">
+        <button class="btn-vault-primary" id="btnPickDeviceFolder" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Select / Create Device Folder</span>
+        </button>
+        <button class="btn-vault-secondary" id="btnDefaultDeviceFolder" type="button">
+          Use Default Device Documents
+        </button>
       </div>
     </div>
   </div>
