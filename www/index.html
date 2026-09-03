@@ -760,24 +760,39 @@
         </div>
         <h3>Device Storage Vault</h3>
         <p class="vault-setup-desc">
-          Select or create a storage folder on your device. Shobhit Admin Hub will securely save all your live website details, admin IDs, passwords, server metrics, and future records directly to an offline vault file (<code>admin-hub-vault.json</code>).
+          Create a storage folder on your device. The app will securely save all your website credentials, admin IDs, passwords, and custom data directly in this offline folder.
         </p>
       </div>
 
+      <div class="vault-folder-creation-box">
+        <label class="vault-field-label">FOLDER NAME ON YOUR PHONE</label>
+        <div class="vault-folder-input-wrap">
+          <span class="vault-prefix-tag">📁 Documents /</span>
+          <input type="text" id="vaultFolderNameInput" class="vault-folder-input" value="AdminHubVault" placeholder="AdminHubVault" spellcheck="false" />
+        </div>
+        <div class="vault-chips-row" id="vaultChipsRow">
+          <button type="button" class="vault-preset-chip active" data-folder="AdminHubVault">AdminHubVault</button>
+          <button type="button" class="vault-preset-chip" data-folder="ShobhitData">ShobhitData</button>
+          <button type="button" class="vault-preset-chip" data-folder="WebsitesVault">WebsitesVault</button>
+        </div>
+      </div>
+
       <div class="vault-folder-preview">
-        <div class="vault-preview-label">DEVICE STORAGE DESTINATION</div>
-        <div class="vault-preview-path" id="modalVaultPathPreview">📁 [Device Storage] Documents/AdminHubVault/admin-hub-vault.json</div>
+        <div class="vault-preview-label">DEVICE STORAGE FILE DESTINATION</div>
+        <div class="vault-preview-path" id="modalVaultPathPreview">📁 Documents/AdminHubVault/admin-hub-vault.json</div>
       </div>
 
       <div class="vault-setup-buttons">
-        <button class="btn-vault-primary" id="btnPickDeviceFolder" type="button">
+        <button class="btn-vault-primary" id="btnCreateVaultFolder" type="button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
           </svg>
-          <span>Select / Create Device Folder</span>
+          <span id="btnCreateVaultFolderText">Allow Access & Create Folder</span>
         </button>
         <button class="btn-vault-secondary" id="btnDefaultDeviceFolder" type="button">
-          Use Default Device Documents
+          Use Default Folder (AdminHubVault)
         </button>
       </div>
     </div>

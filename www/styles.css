@@ -1881,6 +1881,90 @@ input:checked + .slider:before {
   word-break: break-all;
 }
 
+.vault-folder-creation-box {
+  background: #0d0d0d;
+  border: 1px solid #1f1f1f;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vault-field-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #888888;
+  text-transform: uppercase;
+}
+
+.vault-folder-input-wrap {
+  display: flex;
+  align-items: center;
+  background: #050505;
+  border: 1px solid #282828;
+  border-radius: 9px;
+  padding: 0 10px;
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.vault-folder-input-wrap:focus-within {
+  border-color: #555555;
+}
+
+.vault-prefix-tag {
+  font-size: 11.5px;
+  font-family: var(--font-mono);
+  color: #666666;
+  white-space: nowrap;
+  user-select: none;
+  padding-right: 6px;
+}
+
+.vault-folder-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  padding: 9px 0;
+  outline: none;
+  width: 100%;
+}
+
+.vault-chips-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vault-preset-chip {
+  background: #161616;
+  border: 1px solid #282828;
+  border-radius: 8px;
+  color: #888888;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: 5px 9px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.vault-preset-chip:hover {
+  color: #ffffff;
+  border-color: #444444;
+}
+
+.vault-preset-chip.active {
+  background: #252525;
+  color: #ffffff;
+  border-color: #555555;
+}
+
 .vault-setup-buttons {
   display: flex;
   flex-direction: column;

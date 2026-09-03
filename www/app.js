@@ -1716,7 +1716,10 @@
     syncVaultNowBtn: document.getElementById('syncVaultNowBtn'),
     vaultSyncStatusText: document.getElementById('vaultSyncStatusText'),
     vaultFolderPromptModal: document.getElementById('vaultFolderPromptModal'),
-    btnPickDeviceFolder: document.getElementById('btnPickDeviceFolder'),
+    vaultFolderNameInput: document.getElementById('vaultFolderNameInput'),
+    vaultChipsRow: document.getElementById('vaultChipsRow'),
+    btnCreateVaultFolder: document.getElementById('btnCreateVaultFolder'),
+    btnCreateVaultFolderText: document.getElementById('btnCreateVaultFolderText'),
     btnDefaultDeviceFolder: document.getElementById('btnDefaultDeviceFolder'),
     modalVaultPathPreview: document.getElementById('modalVaultPathPreview'),
 
@@ -1851,15 +1854,30 @@
     const Filesystem = window.Capacitor?.Plugins?.Filesystem;
     if (Filesystem) {
       try {
+        if (Filesystem.requestPermissions) {
+          try { await Filesystem.requestPermissions(); } catch (pe) {}
+        }
+        const folder = state.vaultFolder || 'AdminHubVault';
+        try {
+          await Filesystem.mkdir({
+            path: folder,
+            directory: 'DOCUMENTS',
+            recursive: true
+          });
+        } catch (me) {}
+
+        const filePath = `${folder}/admin-hub-vault.json`;
         await Filesystem.writeFile({
-          path: 'AdminHubVault/admin-hub-vault.json',
+          path: filePath,
           directory: 'DOCUMENTS',
           data: jsonString,
           recursive: true
         });
         state.lastVaultSyncTime = new Date();
+        state.vaultPath = `Documents/${filePath}`;
+        localStorage.setItem('omni_vault_path', state.vaultPath);
         updateVaultStatusDisplay();
-        if (manual) showToast('✓ Vault saved to Documents/AdminHubVault/admin-hub-vault.json');
+        if (manual) showToast(`✓ Vault saved to Documents/${filePath}`);
         return;
       } catch (err) {
         console.warn('Native Capacitor Filesystem write error:', err);
@@ -2785,52 +2803,88 @@
     }
 
     // Modal Folder Actions
-    if (elements.btnPickDeviceFolder) {
-      elements.btnPickDeviceFolder.addEventListener('click', async () => {
-        if ('showDirectoryPicker' in window) {
-          try {
-            const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-            state.vaultDirHandle = dirHandle;
-            state.vaultFolder = dirHandle.name;
-            state.vaultPath = `${dirHandle.name}/admin-hub-vault.json`;
-            localStorage.setItem('omni_vault_folder', state.vaultFolder);
-            localStorage.setItem('omni_vault_path', state.vaultPath);
-            localStorage.setItem('omni_vault_setup_completed', 'true');
-            if (elements.vaultFolderPromptModal) {
-              elements.vaultFolderPromptModal.classList.add('hidden');
-            }
-            await saveToDeviceVault(true);
-            return;
-          } catch (e) {
-            if (e.name === 'AbortError') return;
-            console.warn('Directory picker fallback:', e);
-          }
+    if (elements.vaultFolderNameInput) {
+      elements.vaultFolderNameInput.addEventListener('input', () => {
+        let cleanName = elements.vaultFolderNameInput.value.replace(/[^a-zA-Z0-9_\-]/g, '');
+        if (!cleanName) cleanName = 'AdminHubVault';
+        if (elements.modalVaultPathPreview) {
+          elements.modalVaultPathPreview.textContent = `📁 Documents/${cleanName}/admin-hub-vault.json`;
         }
+      });
+    }
 
-        // Fallback for Android / APK / mobile browsers
-        state.vaultFolder = 'Documents/AdminHubVault';
-        state.vaultPath = 'Documents/AdminHubVault/admin-hub-vault.json';
-        localStorage.setItem('omni_vault_folder', state.vaultFolder);
-        localStorage.setItem('omni_vault_path', state.vaultPath);
-        localStorage.setItem('omni_vault_setup_completed', 'true');
-        if (elements.vaultFolderPromptModal) {
-          elements.vaultFolderPromptModal.classList.add('hidden');
+    if (elements.vaultChipsRow) {
+      elements.vaultChipsRow.querySelectorAll('.vault-preset-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          elements.vaultChipsRow.querySelectorAll('.vault-preset-chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          const folder = chip.getAttribute('data-folder');
+          if (elements.vaultFolderNameInput) {
+            elements.vaultFolderNameInput.value = folder;
+          }
+          if (elements.modalVaultPathPreview) {
+            elements.modalVaultPathPreview.textContent = `📁 Documents/${folder}/admin-hub-vault.json`;
+          }
+        });
+      });
+    }
+
+    async function executeCreateVaultFolder(folderName) {
+      let cleanFolder = (folderName || 'AdminHubVault').trim().replace(/[^a-zA-Z0-9_\-]/g, '');
+      if (!cleanFolder) cleanFolder = 'AdminHubVault';
+
+      if (elements.btnCreateVaultFolderText) {
+        elements.btnCreateVaultFolderText.textContent = 'Granting Access & Creating...';
+      }
+
+      state.vaultFolder = cleanFolder;
+      state.vaultPath = `Documents/${cleanFolder}/admin-hub-vault.json`;
+      localStorage.setItem('omni_vault_folder', state.vaultFolder);
+      localStorage.setItem('omni_vault_path', state.vaultPath);
+      localStorage.setItem('omni_vault_setup_completed', 'true');
+
+      // Native Capacitor Filesystem Permission & Directory Creation
+      const Filesystem = window.Capacitor?.Plugins?.Filesystem;
+      if (Filesystem) {
+        try {
+          if (Filesystem.requestPermissions) {
+            await Filesystem.requestPermissions();
+          }
+          await Filesystem.mkdir({
+            path: cleanFolder,
+            directory: 'DOCUMENTS',
+            recursive: true
+          });
+        } catch (fe) {
+          console.warn('Native mkdir/permission notice:', fe);
         }
-        await saveToDeviceVault(true);
+      }
+
+      if (elements.vaultFolderPromptModal) {
+        elements.vaultFolderPromptModal.classList.add('hidden');
+      }
+      if (elements.btnCreateVaultFolderText) {
+        elements.btnCreateVaultFolderText.textContent = 'Allow Access & Create Folder';
+      }
+
+      updateVaultStatusDisplay();
+      await saveToDeviceVault(true);
+      showToast(`📁 Vault Created: Documents/${cleanFolder}`);
+      if (navigator.vibrate) {
+        try { navigator.vibrate([40, 60, 40]); } catch (e) {}
+      }
+    }
+
+    if (elements.btnCreateVaultFolder) {
+      elements.btnCreateVaultFolder.addEventListener('click', async () => {
+        const folderName = elements.vaultFolderNameInput ? elements.vaultFolderNameInput.value : 'AdminHubVault';
+        await executeCreateVaultFolder(folderName);
       });
     }
 
     if (elements.btnDefaultDeviceFolder) {
       elements.btnDefaultDeviceFolder.addEventListener('click', async () => {
-        state.vaultFolder = 'Documents/AdminHubVault';
-        state.vaultPath = 'Documents/AdminHubVault/admin-hub-vault.json';
-        localStorage.setItem('omni_vault_folder', state.vaultFolder);
-        localStorage.setItem('omni_vault_path', state.vaultPath);
-        localStorage.setItem('omni_vault_setup_completed', 'true');
-        if (elements.vaultFolderPromptModal) {
-          elements.vaultFolderPromptModal.classList.add('hidden');
-        }
-        await saveToDeviceVault(true);
+        await executeCreateVaultFolder('AdminHubVault');
       });
     }
 
