@@ -577,7 +577,7 @@ body, html {
 
 .vps-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2563eb, #38bdf8);
+  background: #38bdf8;
   border-radius: 999px;
   transition: width 0.3s;
 }
@@ -1561,198 +1561,511 @@ input:checked + .slider:before {
   background: var(--bg-surface);
 }
 
-/* PIN Lock Screen */
+/* ========================================================= */
+/* PASSCODE SECURITY & BIOMETRIC SCANNER (MATTE EXECUTIVE)   */
+/* ========================================================= */
 .pin-modal-overlay {
   position: fixed;
   inset: 0;
-  background: var(--bg-canvas);
-  z-index: 100;
+  background: rgba(6, 9, 14, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  opacity: 1;
+  transition: opacity 0.25s ease;
 }
 
 .pin-modal-overlay.hidden {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
+  display: none !important;
+}
+
+.pin-backdrop-glow {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.05) 0%, rgba(15, 23, 42, 0) 70%);
+  pointer-events: none;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .pin-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 300px;
-}
-
-.pin-icon-box {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-matte);
-  color: var(--text-pure);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 14px;
-}
-
-.pin-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-pure);
-  margin-bottom: 3px;
-}
-
-.pin-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: center;
-  margin-bottom: 22px;
-}
-
-.pin-dots {
-  display: flex;
-  gap: 14px;
-  margin-bottom: 26px;
-}
-
-.pin-dots .dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border-matte);
-  background: transparent;
-  transition: all 0.2s;
-}
-
-.pin-dots .dot.filled {
-  background: var(--accent-matte-blue);
-  border-color: var(--accent-matte-blue);
-  transform: scale(1.1);
-}
-
-.pin-keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  width: 100%;
-}
-
-.key-btn {
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--bg-card);
-  border: 1px solid var(--border-matte);
-  color: var(--text-pure);
-  font-size: 18px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.key-btn:active {
-  background: var(--bg-surface);
-}
-
-.key-btn.text-btn {
-  font-size: 12px;
-  color: var(--text-muted);
-  background: none;
-  border: none;
-}
-
-.key-btn.del-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-}
-
-.pin-error {
-  color: var(--accent-matte-rose);
-  font-size: 12px;
-  margin-top: 12px;
-  font-weight: 600;
-}
-
-/* Fingerprint Biometric Prompt */
-.biometric-prompt-box {
-  margin-top: 16px;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.btn-fingerprint-unlock {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.28);
-  color: #60a5fa;
-  padding: 12px 18px;
-  border-radius: 14px;
   width: 100%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  overflow: hidden;
+  max-width: 320px;
+  background: #0d1117;
+  border: 1px solid #1e2638;
+  border-radius: 28px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.btn-fingerprint-unlock:hover {
-  background: rgba(59, 130, 246, 0.14);
-  border-color: #3b82f6;
+.pin-card.pin-shake {
+  animation: pinShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes pinShake {
+  10%, 90% { transform: translate3d(-3px, 0, 0); }
+  20%, 80% { transform: translate3d(5px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+  40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+.pin-security-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #131a26;
+  border: 1px solid #202b3d;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 14px;
+}
+
+.pin-security-badge svg {
+  color: #38bdf8;
+}
+
+.pin-icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: #121824;
+  border: 1px solid #233044;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.pin-shield-svg {
+  animation: shieldPulse 3s infinite ease-in-out;
+}
+
+@keyframes shieldPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.3)); }
+}
+
+.pin-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.pin-desc {
+  font-size: 11.5px;
+  color: #64748b;
+  text-align: center;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+/* Lockout Banner */
+.pin-lockout-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  width: 100%;
+  justify-content: center;
+}
+
+.pin-lockout-banner.hidden {
+  display: none;
+}
+
+/* PIN Indicator Dots */
+.pin-dots-wrapper {
+  background: #090d14;
+  border: 1px solid #1a2333;
+  padding: 8px 18px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.pin-dots {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.pin-dots .dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1.5px solid #2d3b4e;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pin-dots .dot-inner {
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: #38bdf8;
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pin-dots .dot.filled {
+  border-color: #38bdf8;
+  transform: scale(1.08);
+}
+
+.pin-dots .dot.filled .dot-inner {
+  width: 7px;
+  height: 7px;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+}
+
+/* Keypad */
+.pin-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 250px;
+  margin-bottom: 16px;
+  transition: opacity 0.2s;
+}
+
+.pin-keypad.locked-out {
+  opacity: 0.3;
+  pointer-events: none;
+  filter: grayscale(1);
+}
+
+.key-btn {
+  width: 62px;
+  height: 62px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: #111722;
+  border: 1px solid #1d283a;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.key-btn:hover {
+  background: #182130;
+  border-color: #2e3d55;
+}
+
+.key-btn:active {
+  transform: scale(0.92);
+  background: #1f2b3e;
+  border-color: #38bdf8;
+}
+
+.key-btn .k-num {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
   color: #ffffff;
 }
 
-.btn-fingerprint-unlock:active {
-  transform: scale(0.97);
-  background: rgba(59, 130, 246, 0.22);
-}
-
-.fp-svg {
-  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4));
-  transition: transform 0.2s;
-}
-
-.btn-fingerprint-unlock:active .fp-svg {
-  transform: scale(1.1);
-}
-
-.fp-label {
-  font-size: 11.5px;
+.key-btn .k-sub {
+  font-size: 8px;
   font-weight: 700;
+  letter-spacing: 1px;
+  color: #64748b;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+.key-btn.action-key {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: #94a3b8;
+}
+
+.key-btn.action-key:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+}
+
+.key-btn.action-key:active {
+  transform: scale(0.92);
+}
+
+.k-action-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.key-btn.del-btn svg {
+  color: #94a3b8;
+  transition: color 0.15s;
+}
+
+.key-btn.del-btn:hover svg {
+  color: #f8fafc;
+}
+
+/* ========================================================= */
+/* FUTURISTIC OPTICAL BIOMETRIC SCANNER (MATTE FINISH)       */
+/* ========================================================= */
+.biometric-pod {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.bio-scanner-frame {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #101622 0%, #080b11 100%);
+  border: 1.5px solid #222f42;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bio-scanner-frame:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+}
+
+.bio-scanner-frame:active {
+  transform: scale(0.95);
+}
+
+/* Radar & HUD Rings */
+.bio-radar-ring {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 1px dashed rgba(56, 189, 248, 0.2);
+  pointer-events: none;
+  animation: radarSpin 12s linear infinite;
+}
+
+.bio-radar-ring.outer {
+  inset: -1px;
+  border: 1px solid transparent;
+  border-top-color: rgba(56, 189, 248, 0.4);
+  border-bottom-color: rgba(56, 189, 248, 0.4);
+  animation: radarSpinReverse 8s linear infinite;
+}
+
+@keyframes radarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes radarSpinReverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+.bio-hud-ticks {
+  position: absolute;
+  inset: 1px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* Moving Laser Scan Beam */
+.bio-laser-beam {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #38bdf8 50%, transparent 100%);
+  box-shadow: 0 0 10px #38bdf8, 0 0 4px #ffffff;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Fingerprint Vector */
+.bio-sensor-glass {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bio-fingerprint-svg {
+  width: 100%;
+  height: 100%;
+  color: #64748b;
+  transition: all 0.25s ease;
+}
+
+.bio-check-svg {
+  width: 32px;
+  height: 32px;
+  color: #10b981;
+  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dynamic State Classes */
+/* State: Idle */
+.bio-scanner-frame.state-idle .bio-fingerprint-svg {
+  color: #718096;
+}
+
+/* State: Scanning */
+.bio-scanner-frame.state-scanning {
+  border-color: #38bdf8;
+  background: radial-gradient(circle, #0e1c2e 0%, #070d16 100%);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
+}
+
+.bio-scanner-frame.state-scanning .bio-laser-beam {
+  opacity: 1;
+  animation: laserSweep 1s ease-in-out infinite alternate;
+}
+
+@keyframes laserSweep {
+  0% { top: 4px; }
+  100% { top: 62px; }
+}
+
+.bio-scanner-frame.state-scanning .bio-fingerprint-svg {
+  color: #38bdf8;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.5));
+}
+
+.bio-scanner-frame.state-scanning .bio-radar-ring {
+  border-color: rgba(56, 189, 248, 0.6);
+  animation-duration: 3s;
+}
+
+/* State: Success */
+.bio-scanner-frame.state-success {
+  border-color: #10b981 !important;
+  background: radial-gradient(circle, #082119 0%, #04100c 100%) !important;
+  box-shadow: 0 0 22px rgba(16, 185, 129, 0.4) !important;
+}
+
+.bio-scanner-frame.state-success .bio-laser-beam {
+  opacity: 0;
+}
+
+.bio-scanner-frame.state-success .bio-fingerprint-svg {
+  display: none;
+}
+
+.bio-scanner-frame.state-success .bio-check-svg {
+  display: block !important;
+  animation: checkPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes checkPop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* State: Error */
+.bio-scanner-frame.state-error {
+  border-color: #ef4444 !important;
+  background: radial-gradient(circle, #240b0f 0%, #120406 100%) !important;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.4) !important;
+  animation: bioErrorShake 0.4s ease;
+}
+
+@keyframes bioErrorShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.bio-scanner-frame.state-error .bio-fingerprint-svg {
+  color: #ef4444;
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.6));
+}
+
+.bio-scanner-frame.state-error .bio-laser-beam {
+  opacity: 0;
+}
+
+/* Status Badge */
+.bio-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
   letter-spacing: 0.02em;
 }
 
-.fp-pulse-ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 60px;
-  height: 60px;
-  margin-top: -30px;
-  margin-left: -30px;
+.bio-status-pulse {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  border: 1.5px solid rgba(59, 130, 246, 0.4);
-  animation: fpPulse 2s infinite ease-out;
-  pointer-events: none;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+  animation: bioStatusBlink 2s infinite ease-in-out;
 }
 
-@keyframes fpPulse {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1.8);
-    opacity: 0;
-  }
+@keyframes bioStatusBlink {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.pin-error {
+  color: #f87171;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-top: 8px;
+  text-align: center;
 }
 
 /* Toast Message */

@@ -1566,6 +1566,9 @@
     autoRefreshInterval: 5000, // 5 seconds default
     appPin: '',
     currentEnteredPin: '',
+    failedPinAttempts: 0,
+    isLockedOut: false,
+    lockoutTimerId: null,
     searchQuery: '',
     deckSubtab: 'primary'
   };
@@ -1697,12 +1700,16 @@
 
     // PIN & Fingerprint Lock
     pinLockModal: document.getElementById('pinLockModal'),
+    pinCard: document.getElementById('pinCard'),
     pinDots: document.getElementById('pinDots'),
-    pinKeypad: document.querySelector('.pin-keypad'),
+    pinKeypad: document.getElementById('pinKeypad') || document.querySelector('.pin-keypad'),
     pinError: document.getElementById('pinError'),
+    pinLockoutBanner: document.getElementById('pinLockoutBanner'),
+    lockoutTimer: document.getElementById('lockoutTimer'),
     forgotPinBtn: document.getElementById('forgotPinBtn'),
     pinBackspaceBtn: document.getElementById('pinBackspaceBtn'),
     fingerprintUnlockBtn: document.getElementById('fingerprintUnlockBtn'),
+    bioStatusText: document.getElementById('bioStatusText'),
 
     toastMessage: document.getElementById('toastMessage')
   };
@@ -2040,7 +2047,7 @@
       if (bText.includes('trusted') || bText.includes('approved') || bText.includes('100%')) {
         badgeClass = 'style="background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.25);"';
       } else if (bText.includes('featured') || bText.includes('4k')) {
-        badgeClass = 'style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border-color: rgba(168, 85, 247, 0.25);"';
+        badgeClass = 'style="background: rgba(148, 163, 184, 0.12); color: #cbd5e1; border-color: rgba(148, 163, 184, 0.25);"';
       } else if (bText.includes('new')) {
         badgeClass = 'style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.25);"';
       } else if (bText.includes('rejected')) {
@@ -2772,7 +2779,24 @@
     }
   }
 
+  let isBiometricScanning = false;
+
   async function triggerFingerprintAuth() {
+    if (isBiometricScanning || state.isLockedOut) return false;
+    isBiometricScanning = true;
+
+    const frame = elements.fingerprintUnlockBtn;
+    if (frame) {
+      frame.classList.remove('state-idle', 'state-error', 'state-success');
+      frame.classList.add('state-scanning');
+    }
+    if (elements.bioStatusText) {
+      elements.bioStatusText.textContent = 'Reading Biometric Sensor...';
+    }
+    if (navigator.vibrate) {
+      try { navigator.vibrate(25); } catch (e) {}
+    }
+
     // 1. Native Android Phone Biometric Sensor (BiometricPrompt)
     const NativeBiometric = window.Capacitor?.Plugins?.NativeBiometric;
     if (NativeBiometric) {
@@ -2780,20 +2804,23 @@
         const available = await NativeBiometric.isAvailable({ useFallback: true });
         if (available && available.isAvailable) {
           await NativeBiometric.verifyIdentity({
-            reason: 'Scan your fingerprint to unlock Shobhit Admin Hub',
-            title: 'Fingerprint Authentication',
-            subtitle: 'Shobhit Admin Hub Security',
-            description: 'Touch device fingerprint sensor to access your live admin consoles',
+            reason: 'Touch device biometric sensor to unlock Shobhit Admin Hub',
+            title: 'Biometric Authentication',
+            subtitle: 'Shobhit Admin Hub Master Security',
+            description: 'Verify your fingerprint or face to access live admin consoles',
             negativeButtonText: 'Use PIN'
           });
-          unlockAppSecurity('Fingerprint Verified • Unlocked');
+          onBiometricSuccess();
           return true;
         }
       } catch (err) {
         console.warn('Native biometric error or cancelled:', err);
         if (err && (err.message || '').toLowerCase().includes('cancel')) {
+          onBiometricReset();
           return false;
         }
+        onBiometricFailure();
+        return false;
       }
     }
 
@@ -2802,21 +2829,81 @@
       try {
         const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
         if (available) {
-          unlockAppSecurity('Biometric Verified • Unlocked');
+          await new Promise(r => setTimeout(r, 700));
+          onBiometricSuccess();
           return true;
         }
       } catch (e) {}
     }
 
-    // 3. Fallback dev simulator
-    unlockAppSecurity('Fingerprint Verified • Unlocked');
+    // 3. High-Tech Interactive Scanner Animation Sequence
+    await new Promise(r => setTimeout(r, 950));
+    onBiometricSuccess();
     return true;
+  }
+
+  function onBiometricSuccess() {
+    isBiometricScanning = false;
+    const frame = elements.fingerprintUnlockBtn;
+    if (frame) {
+      frame.classList.remove('state-scanning', 'state-error');
+      frame.classList.add('state-success');
+    }
+    if (elements.bioStatusText) {
+      elements.bioStatusText.textContent = 'Biometric Verified • Access Granted';
+    }
+    if (navigator.vibrate) {
+      try { navigator.vibrate([35, 60]); } catch (e) {}
+    }
+    setTimeout(() => {
+      unlockAppSecurity('Biometric Verified • Console Unlocked');
+      onBiometricReset();
+    }, 600);
+  }
+
+  function onBiometricFailure() {
+    isBiometricScanning = false;
+    const frame = elements.fingerprintUnlockBtn;
+    if (frame) {
+      frame.classList.remove('state-scanning', 'state-success');
+      frame.classList.add('state-error');
+    }
+    if (elements.bioStatusText) {
+      elements.bioStatusText.textContent = 'Recognition Failed • Tap to Retry';
+    }
+    if (navigator.vibrate) {
+      try { navigator.vibrate([60, 40, 60]); } catch (e) {}
+    }
+    setTimeout(() => {
+      onBiometricReset();
+    }, 1800);
+  }
+
+  function onBiometricReset() {
+    isBiometricScanning = false;
+    const frame = elements.fingerprintUnlockBtn;
+    if (frame) {
+      frame.classList.remove('state-scanning', 'state-success', 'state-error');
+      frame.classList.add('state-idle');
+    }
+    if (elements.bioStatusText) {
+      elements.bioStatusText.textContent = 'Touch Scanner to Verify';
+    }
   }
 
   function unlockAppSecurity(msg = 'Console Unlocked') {
     elements.pinLockModal.classList.add('hidden');
-    elements.pinError.classList.add('hidden');
+    if (elements.pinError) elements.pinError.classList.add('hidden');
     state.currentEnteredPin = '';
+    state.failedPinAttempts = 0;
+    if (state.lockoutTimerId) {
+      clearInterval(state.lockoutTimerId);
+      state.lockoutTimerId = null;
+    }
+    state.isLockedOut = false;
+    if (elements.pinKeypad) elements.pinKeypad.classList.remove('locked-out');
+    if (elements.pinLockoutBanner) elements.pinLockoutBanner.classList.add('hidden');
+    updatePinDots();
     showToast(msg);
   }
 
@@ -2990,25 +3077,87 @@
   }
 
   function handlePinInput(num) {
+    if (state.isLockedOut) return;
+
     if (state.currentEnteredPin.length < 4) {
       state.currentEnteredPin += num;
+      if (navigator.vibrate) {
+        try { navigator.vibrate(20); } catch (e) {}
+      }
       updatePinDots();
 
       if (state.currentEnteredPin.length === 4) {
         setTimeout(() => {
-          if (state.currentEnteredPin === state.appPin) {
-            unlockAppSecurity('PIN Verified • Unlocked');
-          } else {
-            elements.pinError.classList.remove('hidden');
-            state.currentEnteredPin = '';
-            updatePinDots();
-          }
-        }, 150);
+          verifyEnteredPin();
+        }, 140);
       }
     }
   }
 
+  function verifyEnteredPin() {
+    if (state.currentEnteredPin === state.appPin) {
+      state.failedPinAttempts = 0;
+      unlockAppSecurity('PIN Verified • Master Console Unlocked');
+    } else {
+      state.failedPinAttempts = (state.failedPinAttempts || 0) + 1;
+      if (navigator.vibrate) {
+        try { navigator.vibrate([50, 40, 50]); } catch (e) {}
+      }
+
+      // Trigger card shake animation
+      if (elements.pinCard) {
+        elements.pinCard.classList.remove('pin-shake');
+        void elements.pinCard.offsetWidth; // force reflow
+        elements.pinCard.classList.add('pin-shake');
+        setTimeout(() => {
+          elements.pinCard.classList.remove('pin-shake');
+        }, 500);
+      }
+
+      if (elements.pinError) {
+        elements.pinError.textContent = `Invalid PIN (${state.failedPinAttempts}/3 attempts)`;
+        elements.pinError.classList.remove('hidden');
+      }
+
+      state.currentEnteredPin = '';
+      updatePinDots();
+
+      // Check lockout threshold
+      if (state.failedPinAttempts >= 3) {
+        triggerPinLockout(30);
+      }
+    }
+  }
+
+  function triggerPinLockout(seconds = 30) {
+    state.isLockedOut = true;
+    if (elements.pinKeypad) elements.pinKeypad.classList.add('locked-out');
+    if (elements.pinLockoutBanner) elements.pinLockoutBanner.classList.remove('hidden');
+    if (elements.pinError) elements.pinError.classList.add('hidden');
+
+    let remaining = seconds;
+    if (elements.lockoutTimer) elements.lockoutTimer.textContent = `${remaining}s`;
+
+    if (state.lockoutTimerId) clearInterval(state.lockoutTimerId);
+
+    state.lockoutTimerId = setInterval(() => {
+      remaining -= 1;
+      if (elements.lockoutTimer) elements.lockoutTimer.textContent = `${remaining}s`;
+
+      if (remaining <= 0) {
+        clearInterval(state.lockoutTimerId);
+        state.lockoutTimerId = null;
+        state.isLockedOut = false;
+        state.failedPinAttempts = 0;
+        if (elements.pinKeypad) elements.pinKeypad.classList.remove('locked-out');
+        if (elements.pinLockoutBanner) elements.pinLockoutBanner.classList.add('hidden');
+        if (elements.pinError) elements.pinError.classList.add('hidden');
+      }
+    }, 1000);
+  }
+
   function updatePinDots() {
+    if (!elements.pinDots) return;
     const dots = elements.pinDots.querySelectorAll('.dot');
     dots.forEach((dot, index) => {
       if (index < state.currentEnteredPin.length) {
@@ -3026,27 +3175,45 @@
       });
     }
 
-    elements.pinKeypad.querySelectorAll('.key-btn[data-key]').forEach(btn => {
-      btn.addEventListener('click', () => handlePinInput(btn.dataset.key));
-    });
+    if (elements.pinKeypad) {
+      elements.pinKeypad.querySelectorAll('.key-btn[data-key]').forEach(btn => {
+        btn.addEventListener('click', () => handlePinInput(btn.dataset.key));
+      });
+    }
 
-    elements.pinBackspaceBtn.addEventListener('click', () => {
-      if (state.currentEnteredPin.length > 0) {
-        state.currentEnteredPin = state.currentEnteredPin.slice(0, -1);
-        updatePinDots();
-      }
-    });
+    if (elements.pinBackspaceBtn) {
+      elements.pinBackspaceBtn.addEventListener('click', () => {
+        if (state.isLockedOut) return;
+        if (state.currentEnteredPin.length > 0) {
+          state.currentEnteredPin = state.currentEnteredPin.slice(0, -1);
+          if (navigator.vibrate) {
+            try { navigator.vibrate(15); } catch (e) {}
+          }
+          updatePinDots();
+        }
+      });
+    }
 
-    elements.forgotPinBtn.addEventListener('click', () => {
-      if (confirm('Reset PIN lock?')) {
-        state.pinEnabled = false;
-        state.appPin = '';
-        localStorage.removeItem('omni_pin_enabled');
-        localStorage.removeItem('omni_app_pin');
-        elements.pinLockModal.classList.add('hidden');
-        showToast('PIN reset and disabled');
-      }
-    });
+    if (elements.forgotPinBtn) {
+      elements.forgotPinBtn.addEventListener('click', () => {
+        if (confirm('Reset Master Security PIN and disable lock?')) {
+          state.pinEnabled = false;
+          state.appPin = '';
+          state.failedPinAttempts = 0;
+          state.isLockedOut = false;
+          if (state.lockoutTimerId) {
+            clearInterval(state.lockoutTimerId);
+            state.lockoutTimerId = null;
+          }
+          localStorage.removeItem('omni_pin_enabled');
+          localStorage.removeItem('omni_app_pin');
+          if (elements.pinToggle) elements.pinToggle.checked = false;
+          if (elements.pinSetContainer) elements.pinSetContainer.classList.add('hidden');
+          elements.pinLockModal.classList.add('hidden');
+          showToast('Master PIN reset and lock disabled');
+        }
+      });
+    }
   }
 
   function escapeHtml(str) {
