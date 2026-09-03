@@ -1,0 +1,13 @@
+[build]
+  publish = "www"
+
+[[redirects]]
+  from = "/api/live/ash/sites"
+  to = "https://www.allsitehub.site/api/live/ash/sites"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -3,7 +3,7 @@
   "appName": "Shobhit Admin Hub",
   "webDir": "www",
   "server": {
-    "androidScheme": "https",
+    "url": "https://shobhit0296.github.io/admin-website/",
     "cleartext": true,
     "allowNavigation": [
       "*"
